@@ -1,0 +1,10 @@
+# declare constants for flask app
+HOST: 0.0.0.0
+PORT: 5000
+
+# config for OracleDB connection
+DB_IP: oracle.cise.ufl.edu
+DB_PORT: 1521
+SID: orcl
+DB_USER: 
+DB_PASSWORD:
