@@ -148,53 +148,132 @@ def hello():
     return render_template('bar.html', barplt=barplt)
 
 # Interesting Trends List
-@app.route('/interesting_trends_check', methods=['POST', 'GET'])
-def interesting_trends_check():
-    # Put all trends query into this dictionary first/ or into an independent jason file.
-    trends_query_dict = {}
+@app.route('/interesting_trends_list')
+def interesting_trends_list():
+    return render_template('interesting_trends_list.html')
+
+
+# Trends Visualizations
+@app.route('/trend1', methods=['POST', 'GET'])
+def show_trend1():
+    query_template_for_trend1 = ''  # put the sql template of trend1 here
     results = []
     cur = connection.cursor()
     if request.method == 'POST':
-        query_key = request.form["query_key"]
-        print("query_key:", query_key)
-        query = trends_query_dict[query_key]
-        print("query:", query)
+        team = request.form["team"]
+        print("team:", team)
+        query = ''  # construct the final query using the template and the team name
 
         try:
             cur.execute(query)
             for row in cur.fetchall():
                 results.append(row)
 
-            # Place Holder for visualization
+            # Place Holder for code for visualization
 
-            return render_template('interesting_trends_show.html')
+            return render_template('trend1.html')
         except Exception as e:
             print(e)
             return 'There is something wrong!'
     elif request.method == 'GET':
-        return render_template('interesting_trends_check.html')
+        return render_template('trend1.html')
 
 
-# Trends Visualizations
-@app.route('/trend1')
-def show_trend1():
-    return render_template('trend1.html')
-
-@app.route('/trend2')
+@app.route('/trend2', methods=['POST', 'GET'])
 def show_trend2():
-    return render_template('trend2.html')
+    query_template_for_trend1 = ''  # put the sql template of trend2 here
+    results = []
+    cur = connection.cursor()
+    if request.method == 'POST':
+        team = request.form["team"]
+        print("team:", team)
+        query = ''  # construct the final query using the template and the team name
 
-@app.route('/trend3')
+        try:
+            cur.execute(query)
+            for row in cur.fetchall():
+                results.append(row)
+
+            # Place Holder for code for visualization
+
+            return render_template('trend2.html')
+        except Exception as e:
+            print(e)
+            return 'There is something wrong!'
+    elif request.method == 'GET':
+        return render_template('trend2.html')
+
+@app.route('/trend3', methods=['POST', 'GET'])
 def show_trend3():
-    return render_template('trend3.html')
+    query_template_for_trend3 = '' # put the sql template of trend3 here
+    results = []
+    cur = connection.cursor()
+    if request.method == 'POST':
+        team = request.form["team"]
+        print("team:", team)
+        query = ''  # construct the final query using the template and the team name
 
-@app.route('/trend4')
+        try:
+            cur.execute(query)
+            for row in cur.fetchall():
+                results.append(row)
+
+            # Place Holder for code for visualization
+
+            return render_template('trend3.html')
+        except Exception as e:
+            print(e)
+            return 'There is something wrong!'
+    elif request.method == 'GET':
+        return render_template('trend3.html')
+
+@app.route('/trend4', methods=['POST', 'GET'])
 def show_trend4():
-    return render_template('trend4.html')
+    query_template_for_trend4 = ''  # put the sql template of trend4 here
+    results = []
+    cur = connection.cursor()
+    if request.method == 'POST':
+        team = request.form["team"]
+        print("team:", team)
+        query = ''  # construct the final query using the template and the team name
 
-@app.route('/trend5')
+        try:
+            cur.execute(query)
+            for row in cur.fetchall():
+                results.append(row)
+
+            # Place Holder for code for visualization
+
+            return render_template('trend4.html')
+        except Exception as e:
+            print(e)
+            return 'There is something wrong!'
+    elif request.method == 'GET':
+        return render_template('trend4.html')
+
+@app.route('/trend5', methods=['POST', 'GET'])
 def show_trend5():
-    return render_template('trend5.html')
+    query_template_for_trend5 = ''  # put the sql template of trend5 here
+    results = []
+    cur = connection.cursor()
+    if request.method == 'POST':
+        team = request.form["team"]
+        print("team:", team)
+        query = ''  # construct the final query using the template and the team name
+
+        try:
+            cur.execute(query)
+            for row in cur.fetchall():
+                results.append(row)
+
+            # Place Holder for code for visualization
+
+            return render_template('trend5.html')
+        except Exception as e:
+            print(e)
+            return 'There is something wrong!'
+    elif request.method == 'GET':
+        return render_template('trend5.html')
         
 if __name__ == '__main__':
     app.run(host=HOST,
