@@ -41,6 +41,7 @@ cur.execute('''
 cur.close()
 
 
+# Login Page
 @app.route('/',  methods=['POST', 'GET'])
 def index():
     cur = connection.cursor()
@@ -79,6 +80,7 @@ def index():
         return render_template('index.html')
 
 
+# Signup Page
 @app.route('/signup', methods=['POST', 'GET'])
 def sign_up():
     cur = connection.cursor()
@@ -107,6 +109,14 @@ def sign_up():
     elif request.method == 'GET':
         return render_template('signup.html')
 
+
+# Back to home page
+@app.route('/home')
+def back_home():
+    return render_template('home.html')
+
+
+# Sample Query Visualization
 @app.route('/graph')
 def hello():
     img = BytesIO()
@@ -136,6 +146,55 @@ def hello():
     plot_buffer = base64.b64encode(buffer)
     barplt = plot_buffer.decode('utf-8')
     return render_template('bar.html', barplt=barplt)
+
+# Interesting Trends List
+@app.route('/interesting_trends_check', methods=['POST', 'GET'])
+def interesting_trends_check():
+    # Put all trends query into this dictionary first/ or into an independent jason file.
+    trends_query_dict = {}
+    results = []
+    cur = connection.cursor()
+    if request.method == 'POST':
+        query_key = request.form["query_key"]
+        print("query_key:", query_key)
+        query = trends_query_dict[query_key]
+        print("query:", query)
+
+        try:
+            cur.execute(query)
+            for row in cur.fetchall():
+                results.append(row)
+
+            # Place Holder for visualization
+
+            return render_template('interesting_trends_show.html')
+        except Exception as e:
+            print(e)
+            return 'There is something wrong!'
+    elif request.method == 'GET':
+        return render_template('interesting_trends_check.html')
+
+
+# Trends Visualizations
+@app.route('/trend1')
+def show_trend1():
+    return render_template('trend1.html')
+
+@app.route('/trend2')
+def show_trend2():
+    return render_template('trend2.html')
+
+@app.route('/trend3')
+def show_trend3():
+    return render_template('trend3.html')
+
+@app.route('/trend4')
+def show_trend4():
+    return render_template('trend4.html')
+
+@app.route('/trend5')
+def show_trend5():
+    return render_template('trend5.html')
         
 if __name__ == '__main__':
     app.run(host=HOST,

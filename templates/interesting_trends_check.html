@@ -1,0 +1,41 @@
+{#{% extends 'bootstrap/base.html' %}#}
+{% extends 'base.html' %}
+
+{% block head %}
+<title>NCAA_PRO</title>
+{#<link type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">#}
+{% endblock %}
+
+{% block body %}
+{#<style>body{background-image: url(../static/images/gator.jpg); background-size:cover;}</style>#}
+<div class="limiter">
+<h1 style="text-align: center">Interesting Trends</h1>
+    <div class="container-login100">
+        <div class="wrap-login100">
+             <span class="login100-form-title p-b-26">
+                Select one trend
+            </span>
+            <nav>
+                <u1>
+                    <li>Select the trend you want to see
+                        <ul>
+                            <li><a href="/trend1">Trands Query 1</a></li>
+                            <li><a href="/trend2">Trands Query 2</a></li>
+                            <li><a href="/trend3">Trands Query 3</a></li>
+                            <li><a href="/trend4">Trands Query 4</a></li>
+                            <li><a href="/trend5">Trands Query 5</a></li>
+                        </ul>
+                    </li>
+                </u1>
+            </nav>
+
+            <div class="text-center p-t-115">
+                    <a class="txt2" href="/home">
+                        Back Home
+                    </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

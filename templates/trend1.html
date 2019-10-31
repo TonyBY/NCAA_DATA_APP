@@ -1,0 +1,25 @@
+{#{% extends 'bootstrap/base.html' %}#}
+{% extends 'base.html' %}
+
+{% block head %}
+<title>NCAA_PRO</title>
+{#<link type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">#}
+{% endblock %}
+
+{% block body %}
+{#<style>body{background-image: url(../static/images/gator.jpg); background-size:cover;}</style>#}
+<div class="limiter">
+    <h1 style="text-align: center">Interesting Trends</h1>
+    <p>Trend1</p>
+    <div>
+        <form action="/trend1" method="POST">
+            Place Holder for the teams
+        </form>
+    </div>
+    <div>
+        Place Holder for trend visualization.
+    </div>
+
+</div>
+
+{% endblock %}
