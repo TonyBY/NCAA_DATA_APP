@@ -1,6 +1,7 @@
 from flask import Flask, render_template, url_for, request, redirect
 from flask_bootstrap import Bootstrap
 import time
+import json
 import cx_Oracle as oracle
 from Configuration.Config import parse_config_input
 import matplotlib.pyplot as plt; plt.rcdefaults()
@@ -169,39 +170,56 @@ def team_list():
 #Trend Query
 @app.route('/query1', methods=['GET', 'POST'])
 def query1():
-    img = BytesIO()
-    name = str(request.form.get("teamname"))
-    results = []
-    cur = connection.cursor()
-    cur.execute('''SELECT year, SUM(rush_touchdown), SUM(pass_touchdown) 
-                from acolas.team NATURAL JOIN ACOLAS.team_game_statistics
-                WHERE name='%s'
-                GROUP BY year
-                order by year asc''' % name)
+    if request.method == 'GET':
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+            print(team[0])
+        print(teams)
+        return render_template('query1.html', teams=json.dumps(teams))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("teams"))
+        print(name)
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT year, SUM(rush_touchdown), SUM(pass_touchdown)
+                            from acolas.team NATURAL JOIN ACOLAS.team_game_statistics
+                            WHERE name='%s'
+                            GROUP BY year
+                            order by year asc''' % name)
 
-    for row in cur.fetchall():
-        results.append(row)
+        for row in cur.fetchall():
+            results.append(row)
 
-    year = [result[0] for result in results]
-    num_rush = [result[1] for result in results]
-    num_pass = [result[2] for result in results]
+        year = [result[0] for result in results]
+        num_rush = [result[1] for result in results]
+        num_pass = [result[2] for result in results]
 
-    # y_pos = np.arange(len(names))
+        # y_pos = np.arange(len(names))
 
-    plt.plot(year, num_rush, 's-', color='r', label="rush number")
-    plt.plot(year, num_pass, 'o-', color='g', label="pass number")
-    plt.ylabel('Number of Touchdown')
-    plt.title('Query one')
-    plt.legend(loc="best")
-    plt.tight_layout()
-    plt.savefig(img, format='png')
-    plt.close()
-    img.seek(0)
-    # buffer0 = b''.join(img)
+        plt.plot(year, num_rush, 's-', color='r', label="rush number")
+        plt.plot(year, num_pass, 'o-', color='g', label="pass number")
+        plt.ylabel('Number of Touchdown')
+        plt.title('Query one')
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
 
-    plot_buffer0 = base64.b64encode(img.getvalue())
-    q1plt = plot_buffer0.decode('utf-8')
-    return render_template('query1.html', q1plt=q1plt)
+        plot_buffer0 = base64.b64encode(img.getvalue())
+        q1plt = plot_buffer0.decode('utf-8')
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+            print(team[0])
+        return render_template('query1.html', q1plt=q1plt, teams=json.dumps(teams))
 
 
 @app.route('/query2', methods=['GET','POST'])
