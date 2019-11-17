@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="8b288782-5cc1-469b-b3e3-df3787b4bc3a" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Configuration/Config.py" beforeDir="false" afterPath="$PROJECT_DIR$/Configuration/Config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/interesting_trends_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/interesting_trends_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/query1.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query1.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,11 +13,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="399">
-              <caret line="215" column="26" selection-start-line="215" selection-start-column="26" selection-end-line="215" selection-end-column="26" />
+            <state relative-caret-position="451">
+              <caret line="212" column="37" selection-start-line="212" selection-start-column="37" selection-end-line="212" selection-end-column="37" />
               <folding>
                 <element signature="e#0#68#0" expanded="true" />
               </folding>
@@ -37,10 +34,10 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/query1.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="318">
+            <state relative-caret-position="-1189">
               <caret line="90" column="12" lean-forward="true" selection-start-line="90" selection-start-column="12" selection-end-line="90" selection-end-column="12" />
               <folding>
                 <element signature="e#112#1187#0#HTML" />
@@ -129,8 +126,8 @@
       <find>inp</find>
       <find>dump</find>
       <find>load</find>
-      <find>trend</find>
       <find>team_list</find>
+      <find>trend</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -153,8 +150,8 @@
         <option value="$PROJECT_DIR$/templates/trends.html" />
         <option value="$PROJECT_DIR$/templates/interesting_trends_list.html" />
         <option value="$PROJECT_DIR$/Configuration/Config.py" />
-        <option value="$PROJECT_DIR$/app.py" />
         <option value="$PROJECT_DIR$/templates/query1.html" />
+        <option value="$PROJECT_DIR$/app.py" />
       </list>
     </option>
   </component>
@@ -239,12 +236,12 @@
       <updated>1572534741233</updated>
       <workItem from="1572534743951" duration="11653000" />
       <workItem from="1572555310567" duration="5983000" />
-      <workItem from="1574004596114" duration="14976000" />
+      <workItem from="1574004596114" duration="16209000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="32612000" />
+    <option name="totallyTimeSpent" value="33845000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
@@ -420,23 +417,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/app.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="399">
-          <caret line="215" column="26" selection-start-line="215" selection-start-column="26" selection-end-line="215" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#68#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/query1.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="318">
+        <state relative-caret-position="-1189">
           <caret line="90" column="12" lean-forward="true" selection-start-line="90" selection-start-column="12" selection-end-line="90" selection-end-column="12" />
           <folding>
             <element signature="e#112#1187#0#HTML" />
             <element signature="n#style#0;n#div#0;n#form#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="451">
+          <caret line="212" column="37" selection-start-line="212" selection-start-column="37" selection-end-line="212" selection-end-column="37" />
+          <folding>
+            <element signature="e#0#68#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -168,7 +168,7 @@ def query1():
     if request.method == 'GET':
         teams = []
         cur = connection.cursor()
-        cur.execute('''SELECT name FROM acolas.team''')
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
         for team in cur.fetchall():
             teams.append(str(team[0]))
             print(team[0])
@@ -210,7 +210,7 @@ def query1():
         q1plt = plot_buffer0.decode('utf-8')
         teams = []
         cur = connection.cursor()
-        cur.execute('''SELECT name FROM acolas.team''')
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
         for team in cur.fetchall():
             teams.append(str(team[0]))
             print(team[0])
