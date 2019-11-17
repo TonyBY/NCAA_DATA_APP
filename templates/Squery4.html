@@ -1,0 +1,24 @@
+<form class="form-inline" method="POST" action="{{ url_for('Squery4') }}">
+    <div class="form-group">
+      <div class="input-group">
+          <span class="input-group-addon">Please select</span>
+              <select name="iyear" class="selectpicker form-control">
+                  <option value=0>---Please select year!---</option>
+                  <option value=2005>2005</option>
+                  <option value=2006>2006</option>
+                  <option value=2007>2007</option>
+                  <option value=2008>2008</option>
+                  <option value=2009>2009</option>
+                  <option value=2010>2010</option>
+                  <option value=2011>2011</option>
+                  <option value=2012>2012</option>
+                  <option value=2013>2013</option>
+              </select>
+      </div>
+      <button type="submit" class="btn btn-default">Show!</button>
+    </div>
+  </form>
+<div class="container">
+    <h2>Simple Query Four</h2>
+    <img src="data:image/png;base64,{{ Sq4plt }}">    
+  </div>

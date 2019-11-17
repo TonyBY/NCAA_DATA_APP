@@ -153,6 +153,11 @@ def hello():
 def interesting_trends_list():
     return render_template('interesting_trends_list.html')
 
+# Interesting Trends List
+@app.route('/simple')
+def simple():
+    return render_template('simple.html')
+
 # Team List
 @app.route('/team_list')
 def team_list():
@@ -198,30 +203,118 @@ def query1():
     q1plt = plot_buffer0.decode('utf-8')
     return render_template('query1.html', q1plt=q1plt)
 
-# Trends Visualizations
-@app.route('/trends', methods=['POST', 'GET'])
-def show_trends():
-    query_template_for_trends = ''  # put the sql template of trends here
+
+@app.route('/query2', methods=['GET','POST'])
+def query2():
+    img = BytesIO()
+    name = str(request.form.get("teamname"))
     results = []
     cur = connection.cursor()
+    cur.execute('''SELECT unique(team.name) playagainst, result.no_of_home_team_win/(result.no_of_home_team_win+result.no_of_visit_team_win)*100 win_percent
+                FROM acolas.team team, (
+                SELECT visitteam.visit_team, NVL(no_of_home_team_win,0) no_of_home_team_win, NVL(no_of_visit_team_win,0) no_of_visit_team_win FROM  
+                (SELECT visit_team  FROM (
+                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
+                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                WHERE home.game_code=game.game_code AND team.name='%s' 
+                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                ORDER BY visit_team)
+                GROUP BY visit_team) visitteam  
+                FULL OUTER JOIN 
+                (
+                SELECT visit_team, COUNT(*) no_of_home_team_win 
+                FROM (
+                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
+                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                WHERE home.game_code=game.game_code AND team.name='%s' 
+                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                ORDER BY visit_team
+                )
+                WHERE points_of_home_team > points_of_visit_team
+                GROUP BY visit_team) homewin ON visitteam.visit_team=homewin.visit_team
+                FULL OUTER JOIN (
+                SELECT visit_team, COUNT(*) no_of_visit_team_win 
+                FROM (
+                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
+                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team 
+                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                WHERE home.game_code=game.game_code AND team.name='%s' 
+                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code 
+                ORDER BY visit_team
+                )
+                WHERE points_of_home_team <= points_of_visit_team
+                GROUP BY visit_team) visitwin 
+                ON visitteam.visit_team=visitwin.visit_team order by visitteam.visit_team) result 
+                WHERE result.visit_team=team.team_code order by playagainst''' %(name, name, name, name, name, name))
+    for row in cur.fetchall():
+        results.append(row)
+
+    play_against = [result[0] for result in results]  
+    win_percent = [result[1] for result in results]
+
+    # y_pos = np.arange(len(names))
+
+    plt.plot(play_against, win_percent, 's-', color = 'r', label = "Win Percent")
+    plt.ylabel('The Teams That a Selected Team Played Best Against')
+    plt.xticks(rotation=80)
+    plt.title('Query Two')
+    plt.legend(loc = "best")
+    plt.tight_layout()
+    plt.savefig(img,format='png')
+    plt.close()
+    img.seek(0)
+    # buffer0 = b''.join(img)
+
+    plot_buffer2 = base64.b64encode(img.getvalue())
+    q2plt = plot_buffer2.decode('utf-8')
+    return render_template('query2.html', q2plt=q2plt)
+    
+@app.route('/choose_trends', methods=['POST', 'GET'])
+def choose_trends():
     if request.method == 'POST':
-        data = (request.form.get("trends", None), "data")
-        print("trend:", data)
-        query = ''  # construct the final query using the template and the team name
-        #
-        # try:
-        #     cur.execute(query)
-        #     for row in cur.fetchall():
-        #         results.append(row)
+        data = (request.form.get("trends", None))
+        if data in "trend1":
+            return redirect(url_for('query1'))
+        elif data in "trend2":
+            return redirect(url_for('query2'))
+        elif data in "trend3":
+            print("3")
+        elif data in "trend4":
+            print("4")
+        else:
+            print("5")
+# # Trends Visualizations
+# @app.route('/trends', methods=['POST', 'GET'])
+# def show_trends():
+#     query_template_for_trends = ''  # put the sql template of trends here
+#     results = []
+#     cur = connection.cursor()
+#     if request.method == 'POST':
+#         data = (request.form.get("trends", None))
+#         print("trend:", data)
+#         query = ''  # construct the final query using the template and the team name
+#         #
+#         # try:
+#         #     cur.execute(query)
+#         #     for row in cur.fetchall():
+#         #         results.append(row)
 
-            # Place Holder for code for visualization
+#             # Place Holder for code for visualization
 
-        return render_template('trends.html', data=data)
-        # except Exception as e:
-        #     print(e)
-        #     return 'There is something wrong!'
-    # elif request.method == 'GET':
-    #     return render_template('trends.html')
+#         return render_template('trends.html', data=data)
+#         # except Exception as e:
+#         #     print(e)
+#         #     return 'There is something wrong!'
+#     # elif request.method == 'GET':
+#     #     return render_template('trends.html')
 
 # Head to head page
 @app.route('/head_to_head', methods=['POST', 'GET'])

@@ -13,16 +13,16 @@
     <div class="container-trends100">
         <div class="wrap-trends100">
 
-            <form id="trend_form" action="/query1" method="POST" enctype="multipart/form-data">
+            <form id="trend_form" action="/choose_trends" method="POST" enctype="multipart/form-data">
                 <span class="login100-form-title p-b-26">
                     Select one trend
                 </span>
                <select id="trends" name = "trends">
-                 <option value="trend1">trend1</option>
-                 <option value="trend2">trend2</option>
+                 <option value="trend1">For a specific team which plays types (running or passing) resulted in the most scores?</option>
+                 <option value="trend2">Which teams did a <team> play best against? Show me their conferences?</option>
                  <option value="trend3">trend3</option>
-                 <option value="trend4">trend4</option>
-                 <option value="trend5">trend5</option>
+                 <option value="trend4">Show me how a player's statistics changed throughout their career (per game/per year).</option>
+                 <option value="trend5">Are the players getting stronger and stronger?</option>
                </select>
                <input type="submit" value="Go">
              </form>

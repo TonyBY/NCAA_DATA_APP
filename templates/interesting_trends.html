@@ -1,0 +1,27 @@
+{% block head %}
+<title>NCAA_PRO</title>
+{#<link type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">#}
+{% endblock %}
+
+{% block body %}
+
+<div class="limiter">
+<form class="form-inline" method="POST" action="{{ url_for('show_trends') }}">
+    <div class="form-group">
+      <div class="input-group">
+          <span class="input-group-addon">Please select</span>
+              <select name="teamname" class="selectpicker form-control">
+                  <option>---Please select a team!---</option>
+                  <option value="Air Force">Air Force</option>
+                  <option value="UCLA">UCLA</option>
+              </select>
+      </div>
+      <button type="submit" class="btn btn-default">Show!</button>
+    </div>
+  </form>
+<div class="container">
+    <h2>Query one</h2>
+    <img src="data:image/png;base64,{{ q1plt }}">    
+  </div>
+</div>
+{% endblock %}

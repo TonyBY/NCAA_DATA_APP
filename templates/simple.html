@@ -1,0 +1,55 @@
+{% block head %}
+<title>NCAA_PRO</title>
+<link type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+{% endblock %}
+{% block body %}
+<div class="limiter">
+    <h1 style="text-align: center">Quick QA</h1>
+    <div class="container-trends100">
+        <div class="wrap-trends100">
+            <div class="block">
+                <label>What is the best quarterback in</label>
+                <input type="text" placeholder="conference" />
+                <lavel>?</lavel>
+            </div>
+            <div class="block">
+                <label>Which high schools provide the most players?</label>
+            </div>
+            <div class="block">
+                <label>Who is the best running-back in</label>
+                <input type="text" placeholder="conference" />
+                <lavel>?</lavel>
+            </div>
+            <div class="block">
+                <label>What is the best team in year</label>
+                <input type="text" placeholder="year" />
+                <lavel>?</lavel>
+            </div>
+            <div class="block">
+                <label>What is the best team in the dataset?</label>
+            </div>
+            <div class="block">
+                <label>What is the most popular team in terms of attendance?</label>
+            </div>
+            <div class="block">
+                <label>What is the most popular play type throughout year</label>
+                <input type="text" placeholder="year" />
+                <lavel>?</lavel>
+            </div>
+            <div class="block">
+                <label>Who played in the highest scoring/lowest scoring game?</label>
+            </div>
+            <div class="block">
+                <label>How many players are below 6’0”, group them by their positions.</label>
+            </div>
+
+            <div class="text-center p-t-115">
+                <a class="txt2" href="/home">
+                    Back Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
