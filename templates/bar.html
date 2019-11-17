@@ -1,4 +1,13 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<title>NCAA_PRO</title>
+{#<link type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">#}
+{% endblock %}
+
+{% block body %}
 <div class="container">
     <h2>Image</h2>
     <img src="data:image/png;base64,{{ barplt }}">    
-  </div>
+</div>
+{% endblock %}

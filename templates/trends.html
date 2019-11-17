@@ -10,9 +10,12 @@
 {#<style>body{background-image: url(../static/images/gator.jpg); background-size:cover;}</style>#}
 <div class="limiter">
     <h1 style="text-align: center">Interesting Trends</h1>
-    <p>Trend5</p>
+    <p>{{ data[0]}}</p>
     <div>
-        <form action="/trend5" method="POST">
+        {%  if data is defined %}
+            You have selected: {{ data[0] }}
+        {% endif %}
+        <form action="/trend1" method="POST">
             Place Holder for the teams
         </form>
     </div>
