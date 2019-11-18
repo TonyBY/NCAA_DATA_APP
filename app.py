@@ -135,7 +135,7 @@ def hello():
 
     y_pos = np.arange(len(names))
 
-    plt.bar(y_pos, number, align='edge',width=0.5, alpha=0.5)
+    plt.bar(y_pos, number, align='edge', width=0.5, alpha=0.5)
     plt.xticks(y_pos, names, rotation=65)
     plt.ylabel('Number of teams')
     plt.title('Number of FBS Teams in 2013')
@@ -159,15 +159,8 @@ def interesting_trends_list():
 def simple():
     return render_template('simple.html')
 
-# Team List
-@app.route('/team_list')
-def team_list():
-    if request.method == 'POST':
-        data = (request.form.get("teamname", None), "trend")
-        print("trend:", data)
-        return render_template('team_list.html', data=data)
 
-#Trend Query
+# Trend Querys
 @app.route('/query1', methods=['GET', 'POST'])
 def query1():
     if request.method == 'GET':
@@ -176,13 +169,10 @@ def query1():
         cur.execute('''SELECT UNIQUE name FROM acolas.team''')
         for team in cur.fetchall():
             teams.append(str(team[0]))
-            print(team[0])
-        print(teams)
         return render_template('query1.html', teams=json.dumps(teams))
     elif request.method == 'POST':
         img = BytesIO()
         name = str(request.form.get("teams"))
-        print(name)
         results = []
         cur = connection.cursor()
         cur.execute('''SELECT year, SUM(rush_touchdown), SUM(pass_touchdown)
@@ -200,10 +190,11 @@ def query1():
 
         # y_pos = np.arange(len(names))
 
-        plt.plot(year, num_rush, 's-', color='r', label="rush number")
-        plt.plot(year, num_pass, 'o-', color='g', label="pass number")
+        plt.plot(year, num_rush, 's-', color='r', label="rush")
+        plt.plot(year, num_pass, 'o-', color='g', label="pass")
         plt.ylabel('Number of Touchdown')
-        plt.title('Query one')
+        plt.xlabel('year')
+        plt.title('Touchdown number of %s by rush/pass' % name)
         plt.legend(loc="best")
         plt.tight_layout()
         plt.savefig(img, format='png')
@@ -218,72 +209,315 @@ def query1():
         cur.execute('''SELECT UNIQUE name FROM acolas.team''')
         for team in cur.fetchall():
             teams.append(str(team[0]))
-            print(team[0])
         return render_template('query1.html', q1plt=q1plt, teams=json.dumps(teams))
 
 
-@app.route('/query2', methods=['GET','POST'])
+@app.route('/query2', methods=['GET', 'POST'])
 def query2():
+    if request.method == 'GET':
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query2.html', teams=json.dumps(teams))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("teams"))
+        print(name)
+        results = []
+        cur = connection.cursor()
+        cur.execute('''
+        SELECT * FROM (SELECT unique(team.name) playagainst, result.no_of_home_team_win/(result.no_of_home_team_win+result.no_of_visit_team_win)*100 win_percent
+                        FROM acolas.team team, (
+                        SELECT visitteam.visit_team, NVL(no_of_home_team_win,0) no_of_home_team_win, NVL(no_of_visit_team_win,0) no_of_visit_team_win FROM  
+                        (SELECT visit_team  FROM (
+                        SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
+                        (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                        FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                        WHERE home.game_code=game.game_code AND team.name='%s' 
+                        AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                        ORDER BY visit_team)
+                        GROUP BY visit_team) visitteam  
+                        FULL OUTER JOIN 
+                        (
+                        SELECT visit_team, COUNT(*) no_of_home_team_win 
+                        FROM (
+                        SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
+                        (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                        FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                        WHERE home.game_code=game.game_code AND team.name='%s' 
+                        AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                        ORDER BY visit_team
+                        )
+                        WHERE points_of_home_team > points_of_visit_team
+                        GROUP BY visit_team) homewin ON visitteam.visit_team=homewin.visit_team
+                        FULL OUTER JOIN (
+                        SELECT visit_team, COUNT(*) no_of_visit_team_win 
+                        FROM (
+                        SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
+                        (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                        FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team 
+                        WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                        WHERE home.game_code=game.game_code AND team.name='%s' 
+                        AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code 
+                        ORDER BY visit_team
+                        )
+                        WHERE points_of_home_team <= points_of_visit_team
+                        GROUP BY visit_team) visitwin 
+                        ON visitteam.visit_team=visitwin.visit_team order by visitteam.visit_team) result 
+                        WHERE result.visit_team=team.team_code order by playagainst) ORDER BY win_percent DESC''' % (
+        name, name, name, name, name, name))
+        for row in cur.fetchall():
+            results.append(row)
+
+        play_against = [result[0] for result in results]
+        win_percent = [result[1] for result in results]
+
+        # y_pos = np.arange(len(names))
+
+        # plt.plot(play_against, win_percent, 's-', color='r')
+        plt.bar(play_against, win_percent, align = 'edge', width = 0.5, alpha = 0.5)
+
+        plt.ylabel('Win Percentage')
+        plt.xticks(rotation=90, fontsize=8)
+        plt.title('Opponents vs. Win Percentage of %s' % name)
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+
+        plot_buffer2 = base64.b64encode(img.getvalue())
+        q2plt = plot_buffer2.decode('utf-8')
+
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query2.html', q2plt=q2plt, teams=json.dumps(teams))
+
+
+@app.route('/query3', methods=['GET', 'POST'])
+def query3():
+    if request.method == 'GET':
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query3.html', teams=json.dumps(teams))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("teams"))
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT hg.year, hg.avg_attendance, hw.no_of_home_win/hg.no_of_home_game*100 win_percent FROM (
+                        SELECT year, AVG(attendance) avg_attendance, COUNT(*) no_of_home_game FROM 
+                        (SELECT home.game_code, visit.year, visit.attendance, home.home_team_points, visit.visit_team, visit.visit_team_points FROM 
+                        (SELECT unique(game.game_code), tgs.points home_team_points
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=game.home_team AND game.game_code=tgs.game_code AND tgs.team_code=game.home_team) home
+                        JOIN 
+                        (SELECT unique(game.game_code), game.year, game.attendance, game.visit_team, tgs.points visit_team_points
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=game.home_team AND game.game_code=tgs.game_code AND tgs.team_code=game.visit_team) visit
+                        ON home.game_code=visit.game_code ORDER BY year)
+                        GROUP BY year ORDER BY year) hg
+                        JOIN (
+                        SELECT year, COUNT(*) no_of_home_win FROM (
+                        SELECT home.game_code, visit.year, visit.attendance, home.home_team_points, visit.visit_team, visit.visit_team_points FROM 
+                        (SELECT unique(game.game_code), tgs.points home_team_points
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=game.home_team AND game.game_code=tgs.game_code AND tgs.team_code=game.home_team) home
+                        JOIN 
+                        (SELECT unique(game.game_code), game.year, game.attendance, game.visit_team, tgs.points visit_team_points
+                        FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=game.home_team AND game.game_code=tgs.game_code AND tgs.team_code=game.visit_team) visit
+                        ON home.game_code=visit.game_code ORDER BY year)
+                        WHERE home_team_points > visit_team_points GROUP BY year ORDER BY year) hw 
+                        ON hg.year=hw.year''' % (name, name, name, name))
+        for row in cur.fetchall():
+            results.append(row)
+
+        year = [result[0] for result in results]
+        avg_attendence = [result[1] for result in results]
+        win_percent = [result[2] * 400 for result in results]
+
+        # y_pos = np.arange(len(names))
+
+        plt.plot(year, avg_attendence, 's-', color='r', label="Avg Attendence")
+        plt.plot(year, win_percent, 'o-', color='g', label="Win Percent*400")
+        plt.ylabel('Results')
+        plt.xlabel('Years')
+        plt.title('Win Percentage and Attendance through Time')
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+
+        plot_buffer3 = base64.b64encode(img.getvalue())
+        q3plt = plot_buffer3.decode('utf-8')
+
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query3.html', q3plt=q3plt, teams=json.dumps(teams))
+
+
+@app.route('/query6', methods=['GET','POST'])
+def query6():
+    if request.method == 'GET':
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query6.html', teams=json.dumps(teams))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("teams"))
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT year, AVG(time_of_possession), AVG(points) FROM (
+                       SELECT tgs.year, tgs.points, tgs.time_of_possession
+                       FROM acolas.team team, ACOLAS.team_game_statistics tgs
+                       WHERE team.team_code=tgs.team_code AND team.name='%s')
+                       GROUP BY year ORDER BY year''' % name)
+        for row in cur.fetchall():
+            results.append(row)
+        year = [result[0] for result in results]
+        time_of_possession = [result[1] for result in results]
+        points = [result[2] * 80 for result in results]
+        # y_pos = np.arange(len(names))
+        plt.plot(year, time_of_possession, 's-', color='r', label="Avg Time of Possession")
+        plt.plot(year, points, 'o-', color='g', label="Avg Points*80")
+        plt.ylabel('Seconds')
+        plt.xlabel('Years')
+        plt.title('Time of Possession and Win Percentage through the Years')
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+        plot_buffer6 = base64.b64encode(img.getvalue())
+        q6plt = plot_buffer6.decode('utf-8')
+
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query6.html', q6plt=q6plt, teams=json.dumps(teams))
+
+
+@app.route('/query8', methods=['GET','POST'])
+def query8():
+    if request.method == 'GET':
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query8.html', teams=json.dumps(teams))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("teams"))
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT t1.year, t1.no_of_game, t2.no_of_input_team_win, t2.no_of_input_team_win/t1.no_of_game*100 FROM 
+                        (SELECT year, COUNT(*) no_of_game FROM (
+                        SELECT ip.game_code, ip.year, ip.input_team_points, atp.against_team_points FROM 
+                        (SELECT unique(tgs.game_code), tgs.year, tgs.points input_team_points
+                        FROM ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=tgs.team_code ORDER BY year) ip 
+                        JOIN 
+                        (SELECT unique(tgs.game_code), tgs.points against_team_points
+                        FROM ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code!=tgs.team_code AND tgs.game_code 
+                        IN (SELECT unique(tgs.game_code) FROM ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=tgs.team_code) ) atp
+                        ON ip.game_code=atp.game_code) GROUP BY year ORDER BY year) t1
+                        JOIN (
+                        SELECT year, COUNT(input_team_points) no_of_input_team_win FROM (
+                        SELECT ip.game_code, ip.year, ip.input_team_points, atp.against_team_points FROM 
+                        (SELECT unique(tgs.game_code), tgs.year, tgs.points input_team_points
+                        FROM ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=tgs.team_code ORDER BY year) ip 
+                        JOIN 
+                        (SELECT unique(tgs.game_code), tgs.points against_team_points
+                        FROM ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code!=tgs.team_code AND tgs.game_code 
+                        IN (SELECT unique(tgs.game_code) FROM ACOLAS.team_game_statistics tgs, acolas.team team
+                        WHERE team.name='%s' AND team.team_code=tgs.team_code) ) atp
+                        ON ip.game_code=atp.game_code)
+                        WHERE input_team_points > against_team_points GROUP BY year) t2
+                        ON t1.year=t2.year ORDER BY year''' % (name, name, name, name, name, name))
+        for row in cur.fetchall():
+            results.append(row)
+
+        year = [result[0] for result in results]
+        win_per = [result[3] for result in results]
+
+        # y_pos = np.arange(len(names))
+
+        plt.plot(year, win_per, 's-', color='r')
+        plt.ylabel('Winnig Percentage')
+        plt.xlabel('Years')
+        plt.title('Winning Percentage Throughout the Years')
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+
+        plot_buffer8 = base64.b64encode(img.getvalue())
+        q8plt = plot_buffer8.decode('utf-8')
+
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query8.html', q8plt=q8plt, teams=json.dumps(teams))
+
+
+@app.route('/query9', methods=['GET','POST'])
+def query9():
     img = BytesIO()
     name = str(request.form.get("teamname"))
     results = []
     cur = connection.cursor()
-    cur.execute('''SELECT unique(team.name) playagainst, result.no_of_home_team_win/(result.no_of_home_team_win+result.no_of_visit_team_win)*100 win_percent
-                FROM acolas.team team, (
-                SELECT visitteam.visit_team, NVL(no_of_home_team_win,0) no_of_home_team_win, NVL(no_of_visit_team_win,0) no_of_visit_team_win FROM  
-                (SELECT visit_team  FROM (
-                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
-                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
-                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
-                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
-                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
-                WHERE home.game_code=game.game_code AND team.name='%s' 
-                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
-                ORDER BY visit_team)
-                GROUP BY visit_team) visitteam  
-                FULL OUTER JOIN 
-                (
-                SELECT visit_team, COUNT(*) no_of_home_team_win 
-                FROM (
-                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
-                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
-                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
-                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
-                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
-                WHERE home.game_code=game.game_code AND team.name='%s' 
-                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
-                ORDER BY visit_team
-                )
-                WHERE points_of_home_team > points_of_visit_team
-                GROUP BY visit_team) homewin ON visitteam.visit_team=homewin.visit_team
-                FULL OUTER JOIN (
-                SELECT visit_team, COUNT(*) no_of_visit_team_win 
-                FROM (
-                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
-                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team, 
-                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
-                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team 
-                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
-                WHERE home.game_code=game.game_code AND team.name='%s' 
-                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code 
-                ORDER BY visit_team
-                )
-                WHERE points_of_home_team <= points_of_visit_team
-                GROUP BY visit_team) visitwin 
-                ON visitteam.visit_team=visitwin.visit_team order by visitteam.visit_team) result 
-                WHERE result.visit_team=team.team_code order by playagainst''' %(name, name, name, name, name, name))
+    cur.execute('''SELECT UNIQUE(t.name), taa.year, taa.avgheight, taa.avgweight 
+                FROM acolas.team t,
+                (SELECT team_code, year, AVG(height) avgheight, AVG(weight) avgweight 
+                FROM acolas.player WHERE height IS NOT NULL AND weight IS NOT NULL GROUP BY team_code, year) taa
+                WHERE t.team_code=taa.team_code AND t.name='%s' ORDER BY year''' %name)
     for row in cur.fetchall():
         results.append(row)
 
-    play_against = [result[0] for result in results]  
-    win_percent = [result[1] for result in results]
+    year = [result[1] for result in results]
+    avgheight = [result[2] for result in results]
+    avgweight = [result[3] for result in results]
 
     # y_pos = np.arange(len(names))
 
-    plt.plot(play_against, win_percent, 's-', color = 'r', label = "Win Percent")
-    plt.ylabel('The Teams That a Selected Team Played Best Against')
-    plt.xticks(rotation=80)
-    plt.title('Query Two')
+    plt.plot(year, avgheight, 's-', color = 'r', label = "Avg Height")
+    plt.plot(year, avgweight, 'o-', color = 'g', label = "Avg Weight")
+    plt.ylabel('Number')
+    plt.title('Query Nine')
     plt.legend(loc = "best")
     plt.tight_layout()
     plt.savefig(img,format='png')
@@ -291,10 +525,44 @@ def query2():
     img.seek(0)
     # buffer0 = b''.join(img)
 
-    plot_buffer2 = base64.b64encode(img.getvalue())
-    q2plt = plot_buffer2.decode('utf-8')
-    return render_template('query2.html', q2plt=q2plt)
-    
+    plot_buffer91 = base64.b64encode(img.getvalue())
+    q91plt = plot_buffer91.decode('utf-8')
+
+    img = BytesIO()
+    conference_name = str(request.form.get("conname"))
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT ct.year, AVG(avgheight) avghc, AVG(avgweight) avgwc FROM (
+                    SELECT unique(taa.team_code), c.name conference, taa.year, taa.avgheight, taa.avgweight FROM acolas.team t, acolas.conference c, (
+                    SELECT team_code, year, AVG(height) avgheight, AVG(weight) avgweight FROM acolas.player
+                    WHERE height IS NOT NULL AND weight IS NOT NULL
+                    GROUP BY team_code, year) taa WHERE taa.team_code=t.team_code AND t.conference_code=c.conference_code  AND c.name='%s') ct
+                    GROUP BY year ORDER BY year''' % conference_name)
+    for row in cur.fetchall():
+        results.append(row)
+
+    year = [result[0] for result in results]
+    avgheight = [result[1] for result in results]
+    avgweight = [result[2] for result in results]
+
+    # y_pos = np.arange(len(names))
+
+    plt.plot(year, avgheight, 's-', color='r', label="Avg Height")
+    plt.plot(year, avgweight, 'o-', color='g', label="Avg Weight")
+    plt.ylabel('Number')
+    plt.title('Query Nine B')
+    plt.legend(loc="best")
+    plt.tight_layout()
+    plt.savefig(img, format='png')
+    plt.close()
+    img.seek(0)
+    # buffer0 = b''.join(img)
+
+    plot_buffer92 = base64.b64encode(img.getvalue())
+    q92plt = plot_buffer92.decode('utf-8')
+    return render_template('query9.html', q91plt=q91plt, q92plt=q92plt)
+
+
 @app.route('/choose_trends', methods=['POST', 'GET'])
 def choose_trends():
     if request.method == 'POST':
@@ -304,35 +572,14 @@ def choose_trends():
         elif data in "trend2":
             return redirect(url_for('query2'))
         elif data in "trend3":
-            print("3")
+            return redirect(url_for('query3'))
         elif data in "trend4":
-            print("4")
+            return redirect(url_for('query6'))
+        elif data in "trend5":
+            return redirect(url_for('query8'))
         else:
-            print("5")
-# # Trends Visualizations
-# @app.route('/trends', methods=['POST', 'GET'])
-# def show_trends():
-#     query_template_for_trends = ''  # put the sql template of trends here
-#     results = []
-#     cur = connection.cursor()
-#     if request.method == 'POST':
-#         data = (request.form.get("trends", None))
-#         print("trend:", data)
-#         query = ''  # construct the final query using the template and the team name
-#         #
-#         # try:
-#         #     cur.execute(query)
-#         #     for row in cur.fetchall():
-#         #         results.append(row)
+            return redirect(url_for('query9'))
 
-#             # Place Holder for code for visualization
-
-#         return render_template('trends.html', data=data)
-#         # except Exception as e:
-#         #     print(e)
-#         #     return 'There is something wrong!'
-#     # elif request.method == 'GET':
-#     #     return render_template('trends.html')
 
 # Head to head page
 @app.route('/head_to_head', methods=['POST', 'GET'])

@@ -67,9 +67,9 @@
 {% endblock %}
 
 {% block body %}
-    <h2>What are the teams did a team played the best against between 2005 and 2013?</h2>
+    <h2>How does time possession of the ball affect a team’s performance?</h2>
     <!--Make sure the form has the autocomplete function switched off:-->
-    <form autocomplete="off" action="/query2" method="POST">
+    <form autocomplete="off" action="/query6" method="POST">
       <div class="autocomplete" style="width:300px;">
         <input id="teams" type="text" name="teams" placeholder="Team">
       </div>
@@ -183,6 +183,6 @@
 
 
     <div class="container">
-        <img src="data:image/png;base64,{{ q2plt }}">
+        <img src="data:image/png;base64,{{ q6plt }}">
     </div>
 {% endblock %}

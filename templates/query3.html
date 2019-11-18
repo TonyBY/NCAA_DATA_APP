@@ -67,9 +67,9 @@
 {% endblock %}
 
 {% block body %}
-    <h2>For a specific team which plays types (running or passing) resulted in the most scores?</h2>
+    <h2>How did the attendance affect a team’s winning percentage?</h2>
     <!--Make sure the form has the autocomplete function switched off:-->
-    <form autocomplete="off" action="/query1" method="POST">
+    <form autocomplete="off" action="/query3" method="POST">
       <div class="autocomplete" style="width:300px;">
         <input id="teams" type="text" name="teams" placeholder="Team">
       </div>
@@ -183,6 +183,6 @@
 
 
     <div class="container">
-        <img src="data:image/png;base64,{{ q1plt }}">
+        <img src="data:image/png;base64,{{ q3plt }}">
     </div>
 {% endblock %}
