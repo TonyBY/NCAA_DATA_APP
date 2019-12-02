@@ -375,6 +375,43 @@ def query3():
         return render_template('query3.html', q3plt=q3plt, teams=json.dumps(teams))
 
 
+@app.route('/query4', methods=['GET', 'POST'])
+def query4():
+    img = BytesIO()
+    name = str(request.form.get("firstname"))
+    key = int(name.find(" "))
+    firstname = name[0:key]
+    lastname = name[(key + 1):len(name)]
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT UNIQUE(x.year), x.yard_in_year, x.touchdown_in_year FROM (
+                SELECT player_code, year, SUM(yard) yard_in_year, SUM(touchdown) touchdown_in_year FROM (
+                SELECT pgs.player_code, pgs.game_code, pgs.year, pgs.rush_yard+pgs.pass_yard as yard, pgs.rush_touchdown+pgs.pass_touchdown as touchdown
+                from ACOLAS.player_game_statistics pgs)
+                GROUP BY player_code, year order by player_code, year asc) x,
+                acolas.player p
+                WHERE x.player_code=p.player_code AND p.first_name='%s' AND p.last_name='%s' order by year''' %(firstname, lastname))
+    for row in cur.fetchall():
+        results.append(row)
+    year = [result[0] for result in results]
+    yard_in_year = [result[1]/100 for result in results]
+    touch_down_in_year = [result[2] for result in results]
+    # y_pos = np.arange(len(names))
+    plt.plot(year, yard_in_year, 's-', color = 'r', label = "yard in year/100")
+    plt.plot(year, touch_down_in_year, 'o-', color = 'g', label = "touch down in year")
+    plt.ylabel('Statistic change')
+    plt.title('Query four')
+    plt.legend(loc = "best")
+    plt.tight_layout()
+    plt.savefig(img,format='png')
+    plt.close()
+    img.seek(0)
+    # buffer0 = b''.join(img)
+    plot_buffer4 = base64.b64encode(img.getvalue())
+    q4plt = plot_buffer4.decode('utf-8')
+    return render_template('query4.html', q4plt=q4plt)
+
+
 @app.route('/query6', methods=['GET','POST'])
 def query6():
     if request.method == 'GET':
@@ -574,8 +611,10 @@ def choose_trends():
         elif data in "trend3":
             return redirect(url_for('query3'))
         elif data in "trend4":
-            return redirect(url_for('query6'))
+            return redirect(url_for('query4'))
         elif data in "trend5":
+            return redirect(url_for('query6'))
+        elif data in "trend6":
             return redirect(url_for('query8'))
         else:
             return redirect(url_for('query9'))
