@@ -1,17 +1,25 @@
-from flask import Flask, render_template, url_for, request, redirect
+import base64
+from io import BytesIO
+import numpy as np
+from flask import Flask, flash, render_template, url_for, request, redirect
 from flask_bootstrap import Bootstrap
 import time
 import json
 import cx_Oracle as oracle
 from Configuration.Config import parse_config_input
-import matplotlib.pyplot as plt; plt.rcdefaults()
-import numpy as np
 import matplotlib.pyplot as plt
-from io import BytesIO
-import base64
+plt.rcdefaults()
+from flask_toastr import Toastr
+
+
 
 # initialize flask application
 app = Flask(__name__)
+toastr = Toastr()
+app.config['SECRET_KEY'] = 'you-will-never-guess'
+
+# initialize toastr on the app within create_app()
+toastr.init_app(app)
 bootstrap = Bootstrap(app)
 # declare constants for flask app
 cfg = parse_config_input("./Configuration/config.yml")
@@ -38,7 +46,7 @@ cur.execute('''
             EXCEPTION
                 WHEN OTHERS THEN NULL;
             END;
-            ''')# EXECUTE IMMEDIATE 'DROP TABLE NCAA_PRO_USERS';
+            ''')  # EXECUTE IMMEDIATE 'DROP TABLE NCAA_PRO_USERS';
 cur.close()
 
 
@@ -54,7 +62,8 @@ def index():
         # date_created = time.strftime('%Y/%m/%d %H:%M:%S')
         try:
             # cur.execute("SELECT password FROM NCAA_Pro_Users WHERE username='%s'" % username)
-            cur.execute("SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
+            cur.execute(
+                "SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
             print("SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
             real_password = cur.fetchone()[0]
             print("real password:", real_password)
@@ -72,7 +81,8 @@ def index():
         #     id = 0
         values = (username, password)
         try:
-            cur.execute("INSERT INTO  NCAA_PRO_USERS VALUES ('%s', '%s')" % values)
+            cur.execute(
+                "INSERT INTO  NCAA_PRO_USERS VALUES ('%s', '%s')" % values)
             connection.commit()
             return redirect('/')
         except:
@@ -98,9 +108,11 @@ def sign_up():
             values = (username, password)
             print(values)
             try:
-                cur.execute("INSERT INTO NCAA_PRO_USERS VALUES ('%s', '%s')" % values)
+                cur.execute(
+                    "INSERT INTO NCAA_PRO_USERS VALUES ('%s', '%s')" % values)
                 connection.commit()
-                cur.execute("SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
+                cur.execute(
+                    "SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
                 real_password = cur.fetchone()[0]
                 print("registered password:", real_password)
                 return render_template('sign_up_success.html')
@@ -130,7 +142,7 @@ def hello():
     for row in cur.fetchall():
         results.append(row)
 
-    names = [result[0] for result in results]  
+    names = [result[0] for result in results]
     number = [result[1] for result in results]
 
     y_pos = np.arange(len(names))
@@ -272,7 +284,7 @@ def query2():
                         GROUP BY visit_team) visitwin 
                         ON visitteam.visit_team=visitwin.visit_team order by visitteam.visit_team) result 
                         WHERE result.visit_team=team.team_code order by playagainst) ORDER BY win_percent DESC''' % (
-        name, name, name, name, name, name))
+            name, name, name, name, name, name))
         for row in cur.fetchall():
             results.append(row)
 
@@ -282,7 +294,7 @@ def query2():
         # y_pos = np.arange(len(names))
 
         # plt.plot(play_against, win_percent, 's-', color='r')
-        plt.bar(play_against, win_percent, align = 'edge', width = 0.5, alpha = 0.5)
+        plt.bar(play_against, win_percent, align='edge', width=0.5, alpha=0.5)
 
         plt.ylabel('Win Percentage')
         plt.xticks(rotation=90, fontsize=8)
@@ -375,7 +387,7 @@ def query3():
         return render_template('query3.html', q3plt=q3plt, teams=json.dumps(teams))
 
 
-@app.route('/query6', methods=['GET','POST'])
+@app.route('/query6', methods=['GET', 'POST'])
 def query6():
     if request.method == 'GET':
         teams = []
@@ -400,7 +412,8 @@ def query6():
         time_of_possession = [result[1] for result in results]
         points = [result[2] * 80 for result in results]
         # y_pos = np.arange(len(names))
-        plt.plot(year, time_of_possession, 's-', color='r', label="Avg Time of Possession")
+        plt.plot(year, time_of_possession, 's-',
+                 color='r', label="Avg Time of Possession")
         plt.plot(year, points, 'o-', color='g', label="Avg Points*80")
         plt.ylabel('Seconds')
         plt.xlabel('Years')
@@ -422,7 +435,7 @@ def query6():
         return render_template('query6.html', q6plt=q6plt, teams=json.dumps(teams))
 
 
-@app.route('/query8', methods=['GET','POST'])
+@app.route('/query8', methods=['GET', 'POST'])
 def query8():
     if request.method == 'GET':
         teams = []
@@ -473,7 +486,7 @@ def query8():
         # y_pos = np.arange(len(names))
 
         plt.plot(year, win_per, 's-', color='r')
-        plt.ylabel('Winnig Percentage')
+        plt.ylabel('Winning Percentage')
         plt.xlabel('Years')
         plt.title('Winning Percentage Throughout the Years')
         plt.legend(loc="best")
@@ -494,7 +507,7 @@ def query8():
         return render_template('query8.html', q8plt=q8plt, teams=json.dumps(teams))
 
 
-@app.route('/query9', methods=['GET','POST'])
+@app.route('/query9', methods=['GET', 'POST'])
 def query9():
     img = BytesIO()
     name = str(request.form.get("teamname"))
@@ -504,7 +517,7 @@ def query9():
                 FROM acolas.team t,
                 (SELECT team_code, year, AVG(height) avgheight, AVG(weight) avgweight 
                 FROM acolas.player WHERE height IS NOT NULL AND weight IS NOT NULL GROUP BY team_code, year) taa
-                WHERE t.team_code=taa.team_code AND t.name='%s' ORDER BY year''' %name)
+                WHERE t.team_code=taa.team_code AND t.name='%s' ORDER BY year''' % name)
     for row in cur.fetchall():
         results.append(row)
 
@@ -514,13 +527,13 @@ def query9():
 
     # y_pos = np.arange(len(names))
 
-    plt.plot(year, avgheight, 's-', color = 'r', label = "Avg Height")
-    plt.plot(year, avgweight, 'o-', color = 'g', label = "Avg Weight")
+    plt.plot(year, avgheight, 's-', color='r', label="Avg Height")
+    plt.plot(year, avgweight, 'o-', color='g', label="Avg Weight")
     plt.ylabel('Number')
     plt.title('Query Nine')
-    plt.legend(loc = "best")
+    plt.legend(loc="best")
     plt.tight_layout()
-    plt.savefig(img,format='png')
+    plt.savefig(img, format='png')
     plt.close()
     img.seek(0)
     # buffer0 = b''.join(img)
@@ -581,10 +594,124 @@ def choose_trends():
             return redirect(url_for('query9'))
 
 
+@app.route('/simple1', methods=['POST', 'GET'])
+def simple1():
+    text = request.form['text']
+    print("FINNA " + str(text))
+
+
+@app.route('/simple2', methods=['POST', 'GET'])
+def simple2():
+    results = []
+    year = str(request.form['text'])
+    cur = connection.cursor()
+    cur.execute('''(SELECT * FROM 
+                (SELECT year, last_school, COUNT(*) no_of_players FROM acolas.player 
+                WHERE last_school IS NOT NULL AND year=2007
+                GROUP BY year, last_school 
+                ORDER BY no_of_players DESC) 
+                WHERE rownum<=1)''')
+    for row in cur.fetchall():
+        results.append(row)
+    flash("School: " + str(results[0][1]) + '<br/>' + "Players: " + str(results[0][2]))
+    return render_template('simple.html')
+
+@app.route('/simple4', methods=['POST', 'GET'])
+def simple4():
+    results = []
+    year = str(request.form['text'])
+    cur = connection.cursor()
+    cur.execute('''SELECT name 
+                FROM(SELECT unique(t3.year), t.name, t3.max_total_points FROM acolas.team t, (
+                SELECT t1.year, t1.team_code, t2.max_total_points FROM (
+                SELECT year, team_code, SUM(points) total_points 
+                FROM ACOLAS.team_game_statistics GROUP BY year, team_code) t1
+                JOIN (
+                SELECT year, max(total_points) max_total_points FROM (
+                SELECT year, team_code, SUM(points) total_points
+                FROM ACOLAS.team_game_statistics 
+                GROUP BY year, team_code) GROUP BY year) t2 ON t1.total_points=t2.max_total_points) t3
+                WHERE t.team_code=t3.team_code ORDER BY year)
+                WHERE year =%s
+            '''%year)
+    for row in cur.fetchall():
+        results.append(row)
+    print(results)
+    flash("Best Team: " + str(results[0][0]))
+    return render_template('simple.html')
+
+@app.route('/simple6', methods=['POST', 'GET'])
+def simple6():
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT ta.total_attendance, t.name FROM acolas.team t, 
+    (SELECT team, SUM(attendance) total_attendance FROM (
+    SELECT visit_team team, attendance FROM acolas.game UNION
+    SELECT home_team team, attendance FROM acolas.game)
+    GROUP BY TEAM ORDER BY sum(attendance) desc) ta
+    WHERE rownum=1''')
+    for row in cur.fetchall():
+        results.append(row)
+    print(results)
+    attendance = format(results[0][0], ",")
+    flash("Team: " + str(results[0][1]) + "<br/>" + "Total Attendance: " + str(attendance))
+    return render_template('simple.html')
+
+@app.route('/simple8a', methods=['POST', 'GET'])
+def simple8a():
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT UNIQUE(t.name), points FROM ACOLAS.team_game_statistics tgs, acolas.team t 
+                WHERE tgs.game_code=(SELECT game_code FROM 
+                (SELECT game_code, SUM(points) 
+                FROM ACOLAS.team_game_statistics GROUP BY game_code ORDER BY sum(points) desc)
+                WHERE ROWNUM=1) 
+                AND tgs.team_code=t.team_code''')
+    for row in cur.fetchall():
+        results.append(row)
+    print(results)
+    flash("Team1: " + str(results[0][0]) + " Score: " + str(results[0][1]) + "<br/>" + "Team2: " + str(results[1][0]) + " Score: " + str(results[1][1]))
+    return render_template('simple.html')
+
+@app.route('/simple8b', methods=['POST', 'GET'])
+def simple8b():
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT UNIQUE(t.name), points FROM ACOLAS.team_game_statistics tgs, acolas.team t 
+                WHERE tgs.game_code=(SELECT game_code FROM 
+                (SELECT game_code, SUM(points) 
+                FROM ACOLAS.team_game_statistics GROUP BY game_code ORDER BY sum(points) asc)
+                WHERE ROWNUM=1) 
+                AND tgs.team_code=t.team_code''')
+    for row in cur.fetchall():
+        results.append(row)
+    print(results)
+    flash("Team1: " + str(results[0][0]) + " Score: " + str(results[0][1]) + "<br/>" + "Team2: " + str(results[1][0]) + " Score: " + str(results[1][1]))
+    return render_template('simple.html')
+
+@app.route('/simple9', methods=['POST', 'GET'])
+def simple9():
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT position, COUNT(*) FROM (
+                SELECT UNIQUE(player_code), position, height FROM acolas.player 
+                WHERE height IS NOT NULL and position IS NOT NULL AND height < 72) GROUP BY position ORDER BY COUNT(*) DESC''')
+    for row in cur.fetchall():
+        results.append(row)
+    print(results)
+    answer_list = []
+    for row in results:
+        answer_list.append(str(row[0])+': '+str(row[1]))
+    answers = ' | '.join(answer_list)
+    answers = '| ' + answers + ' |'
+    flash(answers)
+    return render_template('simple.html')
+
 # Head to head page
 @app.route('/head_to_head', methods=['POST', 'GET'])
 def head_to_head():
-    query_template_for_head_to_head = ''  # put the sql template of head_to_head here
+    # put the sql template of head_to_head here
+    query_template_for_head_to_head = ''
     results = []
     cur = connection.cursor()
     if request.method == 'POST':
@@ -592,7 +719,8 @@ def head_to_head():
         print("team:", team)
         best_or_worst = request.form["best_or_worst"]
         print("best_or_worst:", best_or_worst)
-        query = ''  # construct the final query using the template, the team name, and the best_or_worst.
+        # construct the final query using the template, the team name, and the best_or_worst.
+        query = ''
 
         try:
             cur.execute(query)
@@ -620,7 +748,8 @@ def quick_qa():
         print("team:", team)
         best_or_worst = request.form["best_or_worst"]
         print("best_or_worst:", best_or_worst)
-        query = ''  # construct the final query using the template, the team name, and the best_or_worst.
+        # construct the final query using the template, the team name, and the best_or_worst.
+        query = ''
 
         try:
             cur.execute(query)
