@@ -228,7 +228,7 @@ def query2():
         results = []
         cur = connection.cursor()
         cur.execute('''
-        SELECT * FROM (SELECT unique(team.name) playagainst, result.no_of_home_team_win/(result.no_of_home_team_win+result.no_of_visit_team_win)*100 win_percent
+        SELECT * FROM (SELECT unique(team.name) playagainst, result.no_of_home_team_win/(result.no_of_home_team_F+result.no_of_visit_team_win)*100 win_percent
                         FROM acolas.team team, (
                         SELECT visitteam.visit_team, NVL(no_of_home_team_win,0) no_of_home_team_win, NVL(no_of_visit_team_win,0) no_of_visit_team_win FROM  
                         (SELECT visit_team  FROM (
@@ -284,9 +284,9 @@ def query2():
         # plt.plot(play_against, win_percent, 's-', color='r')
         plt.bar(play_against, win_percent, align = 'edge', width = 0.5, alpha = 0.5)
 
-        plt.ylabel('Win Percentage')
+        plt.ylabel('Winning Percentage')
         plt.xticks(rotation=90, fontsize=8)
-        plt.title('Opponents vs. Win Percentage of %s' % name)
+        plt.title('Winning Percentage against opponents of %s' % name)
         plt.tight_layout()
         plt.savefig(img, format='png')
         plt.close()
@@ -356,12 +356,12 @@ def query3():
         # y_pos = np.arange(len(names))
 
         plt.plot(year, avg_attendence, 's-', color='r', label="Avg Attendence")
-        plt.plot(year, win_percent, 'o-', color='g', label="Win Percent*400")
+        plt.plot(year, win_percent, 'o-', color='g', label="Winning Percent*400")
         plt.text(2009, 50000, "correlation_coefficient:\n" + str(correlation_coefficient[0][1])[:5],
                  fontsize=12, horizontalalignment='center', verticalalignment='center')
         plt.ylabel('Results')
         plt.xlabel('Years')
-        plt.title('Win Percentage and Attendance through Time')
+        plt.title('Winning Percentage and Attendance throughout Time')
         plt.legend(loc="best")
         plt.tight_layout()
         plt.savefig(img, format='png')
@@ -424,7 +424,7 @@ def query4():
         plt.plot(year, yard_in_year, 's-', color='r', label="100 Yards")
         plt.plot(year, touch_down_in_year, 'o-', color='g', label="Touchdown #")
         plt.xlabel('years')
-        plt.title('Player Statistics Through the Time')
+        plt.title('Player Statistics Throughout the Time')
         plt.legend(loc="best")
         plt.xticks(np.arange(min(year), max(year) + 1, 1.0))
         plt.tight_layout()
@@ -489,7 +489,7 @@ def query6():
                  fontsize=12, horizontalalignment='center', verticalalignment='center')
         plt.ylabel('Seconds')
         plt.xlabel('Years')
-        plt.title('Time of Possession and Win Percentage through the Years')
+        plt.title('Time of Possession and winning Percentage throughout the Years')
         plt.legend(loc="best")
         plt.tight_layout()
         plt.savefig(img, format='png')
@@ -740,6 +740,61 @@ def quick_qa():
             return 'There is something wrong!'
     elif request.method == 'GET':
         return render_template('head_to_head.html')
+
+
+@app.route('/goodtoknow', methods=['GET', 'POST'])
+def goodtoknow():
+    name = str(request.form.get("teamname"))
+    results = []
+    cur = connection.cursor()
+    cur.execute('''SELECT unique(team.name) playagainst, result.no_of_home_team_win/(result.no_of_home_team_win+result.no_of_visit_team_win)*100 win_percent
+                FROM acolas.team team, (
+                SELECT visitteam.visit_team, NVL(no_of_home_team_win,0) no_of_home_team_win, NVL(no_of_visit_team_win,0) no_of_visit_team_win FROM
+                (SELECT visit_team  FROM (
+                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team,
+                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                WHERE home.game_code=game.game_code AND team.name='%s'
+                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                ORDER BY visit_team)
+                GROUP BY visit_team) visitteam
+                FULL OUTER JOIN
+                (
+                SELECT visit_team, COUNT(*) no_of_home_team_win
+                FROM (
+                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team,
+                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                WHERE home.game_code=game.game_code AND team.name='%s'
+                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                ORDER BY visit_team
+                )
+                WHERE points_of_home_team > points_of_visit_team
+                GROUP BY visit_team) homewin ON visitteam.visit_team=homewin.visit_team
+                FULL OUTER JOIN (
+                SELECT visit_team, COUNT(*) no_of_visit_team_win
+                FROM (
+                SELECT home.hometeamcode, home.game_code, home.points_of_home_team, game.visit_team visit_team, tgs.points points_of_visit_team
+                FROM ACOLAS.game game, ACOLAS.team_game_statistics tgs, acolas.team team,
+                (SELECT tgs.team_code hometeamcode, game.game_code game_code, points points_of_home_team
+                FROM acolas.game game, ACOLAS.team_game_statistics tgs, acolas.team team
+                WHERE game.home_team=tgs.team_code AND game.game_code=tgs.game_code AND team.name='%s') home
+                WHERE home.game_code=game.game_code AND team.name='%s'
+                AND tgs.game_code=game.game_code AND tgs.team_code=game.visit_team AND game.home_team=team.team_code
+                ORDER BY visit_team
+                )
+                WHERE points_of_home_team <= points_of_visit_team
+                GROUP BY visit_team) visitwin
+                ON visitteam.visit_team=visitwin.visit_team order by visitteam.visit_team) result
+                WHERE result.visit_team=team.team_code  and rownum <= 10
+                order by win_percent desc, playagainst''' % (name, name, name, name, name, name))
+    for row in cur.fetchall():
+        results.append(row)
+    return render_template('goodtoknow.html', results=results)
 
 
 if __name__ == '__main__':

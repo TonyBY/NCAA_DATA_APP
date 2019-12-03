@@ -9,13 +9,13 @@
 {% block body %}
 {#<style>body{background-image: url(../static/images/gator.jpg); background-size:cover;}</style>#}
 <div class="limiter">
-<h1 style="text-align: center">Interesting Trends</h1>
+<h1 style="text-align: center">Insights</h1>
     <div class="container-trends100">
         <div class="wrap-trends100">
 
             <form id="trend_form" action="/choose_trends" method="POST" enctype="multipart/form-data">
                 <span class="login100-form-title p-b-26">
-                    Select one trend
+                    Select one topic
                 </span>
                 <select id="trends" name = "trends">
                     <option value="trend1">For a specific team which plays types (running or passing) resulted in the most scores?</option>
@@ -23,7 +23,7 @@
                     <option value="trend3">How did the attendance affect a team’s winning percentage?</option>
                     <option value="trend4">How a player's statistics changed throughout their career (per game/per year)?</option>
                     <option value="trend5">How does time possession of the ball affect a team’s performance?</option>
-                    <option value="trend6">For a particular college team, do they perform better and better over the years?</option>
+                    <option value="trend6">For a particular college team, what is the winning percentage throughout the years?</option>
                     <option value="trend7">For teams and conferences, how is the growth of the players throughout the years?</option>
                 </select>
                <input type="submit" value="Go">
