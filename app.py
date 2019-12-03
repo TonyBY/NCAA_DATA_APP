@@ -1,6 +1,8 @@
 import base64
 from io import BytesIO
 import numpy as np
+import seaborn as sn
+import pandas as pd
 from flask import Flask, flash, render_template, url_for, request, redirect
 from flask_bootstrap import Bootstrap
 import time
@@ -713,10 +715,10 @@ def simple2():
     cur = connection.cursor()
     cur.execute('''(SELECT * FROM 
                 (SELECT year, last_school, COUNT(*) no_of_players FROM acolas.player 
-                WHERE last_school IS NOT NULL AND year=2007
+                WHERE last_school IS NOT NULL AND year=%s
                 GROUP BY year, last_school 
                 ORDER BY no_of_players DESC) 
-                WHERE rownum<=1)''')
+                WHERE rownum<=1)'''%year)
     for row in cur.fetchall():
         results.append(row)
     flash("School: " + str(results[0][1]) + '<br/>' + "Players: " + str(results[0][2]))
@@ -816,31 +818,201 @@ def simple9():
 # Head to head page
 @app.route('/head_to_head', methods=['POST', 'GET'])
 def head_to_head():
-    # put the sql template of head_to_head here
-    query_template_for_head_to_head = ''
-    results = []
-    cur = connection.cursor()
-    if request.method == 'POST':
-        team = request.form["team"]
-        print("team:", team)
-        best_or_worst = request.form["best_or_worst"]
-        print("best_or_worst:", best_or_worst)
-        # construct the final query using the template, the team name, and the best_or_worst.
-        query = ''
+    if request.method == 'GET':
+        years = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE year FROM acolas.conference order by year asc''')
+        for year in cur.fetchall():
+            years.append(str(year[0]))
+        print(years)
+        return render_template('head_to_head.html', years=json.dumps(years))
 
-        try:
-            cur.execute(query)
-            for row in cur.fetchall():
-                results.append(row)
+    elif request.method == 'POST':
+        img = BytesIO()
+        # put the sql template of head_to_head here
+        year = str(request.form.get("years"))
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT aa, bb, win FROM (
+                    SELECT unique(c2.aa), c.name bb, c2.win FROM (
+                    SELECT unique(c.name) aa, c1.win FROM acolas.conference c, (
+                    SELECT (wn.home_win/an.al)*100 as win FROM 
+                    (SELECT COUNT(*) home_win FROM (
+                    SELECT p1.home_game, p1.home_points, p2.visit_points FROM 
+                    (SELECT game_code as home_game, points as home_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p1
+                    JOIN 
+                    (SELECT game_code as home_game, points as visit_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Southeastern Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p2 
+                    ON p1.home_game=p2.home_game)
+                    WHERE home_points>visit_points ) wn, 
+                    (SELECT COUNT(*) al FROM (
+                    SELECT p1.home_game, p1.home_points, p2.visit_points FROM 
+                    (SELECT game_code as home_game, points as home_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p1
+                    JOIN 
+                    (SELECT game_code as home_game, points as visit_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Southeastern Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p2 
+                    ON p1.home_game=p2.home_game)  ) an  ) c1 WHERE c.name='Big Ten Conference' ) c2, acolas.conference c WHERE c.name='Southeastern Conference'
+                    )
+                    UNION
+                    (
+                    SELECT unique(c2.aa), c.name bb, c2.win FROM (
+                    SELECT unique(c.name) aa, c1.win FROM acolas.conference c, (
+                    SELECT (wn.home_win/an.al)*100 as win FROM 
+                    (SELECT COUNT(*) home_win FROM (
+                    SELECT p1.home_game, p1.home_points, p2.visit_points FROM 
+                    (SELECT game_code as home_game, points as home_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p1
+                    JOIN 
+                    (SELECT game_code as home_game, points as visit_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p2 
+                    ON p1.home_game=p2.home_game)
+                    WHERE home_points>visit_points ) wn, 
+                    (SELECT COUNT(*) al FROM (
+                    SELECT p1.home_game, p1.home_points, p2.visit_points FROM 
+                    (SELECT game_code as home_game, points as home_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p1
+                    JOIN 
+                    (SELECT game_code as home_game, points as visit_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Big Ten Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p2 
+                    ON p1.home_game=p2.home_game)  ) an  ) c1 WHERE c.name='Big Ten Conference' ) c2, acolas.conference c WHERE c.name='Atlantic Coast Conference'
+                    )
+                    UNION
+                    (
+                    SELECT unique(c2.aa), c.name bb, c2.win FROM (
+                    SELECT unique(c.name) aa, c1.win FROM acolas.conference c, (
+                    SELECT (wn.home_win/an.al)*100 as win FROM 
+                    (SELECT COUNT(*) home_win FROM (
+                    SELECT p1.home_game, p1.home_points, p2.visit_points FROM 
+                    (SELECT game_code as home_game, points as home_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p1
+                    JOIN 
+                    (SELECT game_code as home_game, points as visit_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Southeastern Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p2 
+                    ON p1.home_game=p2.home_game)
+                    WHERE home_points>visit_points ) wn, 
+                    (SELECT COUNT(*) al FROM (
+                    SELECT p1.home_game, p1.home_points, p2.visit_points FROM 
+                    (SELECT game_code as home_game, points as home_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p1
+                    JOIN 
+                    (SELECT game_code as home_game, points as visit_points FROM acolas.team_game_statistics WHERE game_code IN (
+                    SELECT game_code as home_coference_game FROM (
+                    SELECT team_code, game_code, points FROM ACOLAS.team_game_statistics WHERE year={0} AND team_code IN 
+                    (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Atlantic Coast Conference' AND t.year={0} AND t.conference_code=c.conference_code) ORDER BY game_code)
+                    GROUP BY game_code HAVING count(*)=1                                                     ) 
+                    AND team_code IN (SELECT unique(t.team_code) FROM acolas.conference c, acolas.team t
+                    WHERE c.name='Southeastern Conference' AND t.year={0} AND t.conference_code=c.conference_code)) p2 
+                    ON p1.home_game=p2.home_game)  ) an  ) c1 WHERE c.name='Atlantic Coast Conference' ) c2, acolas.conference c WHERE c.name='Southeastern Conference'
+                    )'''.format(year))
+        for row in cur.fetchall():
+            results.append(row)
 
-            # Place Holder for code for visualization
+        print(results)
+        extra_results = []
+        for result in results:
+            inverse_row = (result[1], result[0], (100-result[2]))
+            extra_results.append(inverse_row)
+            same_conference1 = (result[0], result[0], 100)
+            extra_results.append(same_conference1)
+            same_conference2 = (result[1], result[1], 100)
+            extra_results.append(same_conference2)
+        extra_results = list(set(extra_results))
+        results = results + extra_results
+        df = pd.DataFrame(results)
+        df.columns = ['Conference A', 'Conference B', 'Win %']
+        print(df)
+        df = df.pivot(index='Conference A', columns='Conference B', values='Win %')
+        print(df)
+        fig, ax = plt.subplots()
+        ax = sn.heatmap(df, cmap = "Blues", annot=True,annot_kws={"size": 10},fmt='g')
+        ax.set_xticklabels(ax.get_xmajorticklabels(), fontsize = 8)
+        ax.set_yticklabels(ax.get_ymajorticklabels(), fontsize = 8)
+        ax.figure.tight_layout()
+        # fig.savefig("output.png")
+        fig.savefig(img, format='png')
+        # plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
 
-            return render_template('head_to_head.html')
-        except Exception as e:
-            print(e)
-            return 'There is something wrong!'
-    elif request.method == 'GET':
-        return render_template('head_to_head.html')
+        plot_buffer2 = base64.b64encode(img.getvalue())
+        h2hplt = plot_buffer2.decode('utf-8')
+
+        years = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE year FROM acolas.conference order by year asc''')
+        for year in cur.fetchall():
+            years.append(str(year[0]))
+
+        return render_template('head_to_head.html',h2hplt=h2hplt, years=years)
 
 
 # Quick QA page
