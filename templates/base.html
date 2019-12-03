@@ -47,10 +47,14 @@
     <script src="../static/js/main.js"></script>
 
     {% block head %}{% endblock %}
+    {{ toastr.include_jquery() }}
+    {{ toastr.include_toastr_css() }}
+    {{ toastr.message() }}
 </head>
 
 <body>
     {% block body %}{% endblock %}
     {% block tail_js %}{% endblock %}
+    {{ toastr.include_toastr_js() }}
 </body>
 </html>
