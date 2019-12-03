@@ -350,10 +350,15 @@ def query3():
         avg_attendence = [result[1] for result in results]
         win_percent = [result[2] * 400 for result in results]
 
+        correlation_coefficient = np.corrcoef(avg_attendence, win_percent, rowvar=True)
+        print("correlation_coefficient: ", correlation_coefficient[0][1])
+
         # y_pos = np.arange(len(names))
 
         plt.plot(year, avg_attendence, 's-', color='r', label="Avg Attendence")
         plt.plot(year, win_percent, 'o-', color='g', label="Win Percent*400")
+        plt.text(2009, 50000, "correlation_coefficient:\n" + str(correlation_coefficient[0][1])[:5],
+                 fontsize=12, horizontalalignment='center', verticalalignment='center')
         plt.ylabel('Results')
         plt.xlabel('Years')
         plt.title('Win Percentage and Attendance through Time')
@@ -377,39 +382,76 @@ def query3():
 
 @app.route('/query4', methods=['GET', 'POST'])
 def query4():
-    img = BytesIO()
-    name = str(request.form.get("firstname"))
-    key = int(name.find(" "))
-    firstname = name[0:key]
-    lastname = name[(key + 1):len(name)]
-    results = []
-    cur = connection.cursor()
-    cur.execute('''SELECT UNIQUE(x.year), x.yard_in_year, x.touchdown_in_year FROM (
-                SELECT player_code, year, SUM(yard) yard_in_year, SUM(touchdown) touchdown_in_year FROM (
-                SELECT pgs.player_code, pgs.game_code, pgs.year, pgs.rush_yard+pgs.pass_yard as yard, pgs.rush_touchdown+pgs.pass_touchdown as touchdown
-                from ACOLAS.player_game_statistics pgs)
-                GROUP BY player_code, year order by player_code, year asc) x,
-                acolas.player p
-                WHERE x.player_code=p.player_code AND p.first_name='%s' AND p.last_name='%s' order by year''' %(firstname, lastname))
-    for row in cur.fetchall():
-        results.append(row)
-    year = [result[0] for result in results]
-    yard_in_year = [result[1]/100 for result in results]
-    touch_down_in_year = [result[2] for result in results]
-    # y_pos = np.arange(len(names))
-    plt.plot(year, yard_in_year, 's-', color = 'r', label = "yard in year/100")
-    plt.plot(year, touch_down_in_year, 'o-', color = 'g', label = "touch down in year")
-    plt.ylabel('Statistic change')
-    plt.title('Query four')
-    plt.legend(loc = "best")
-    plt.tight_layout()
-    plt.savefig(img,format='png')
-    plt.close()
-    img.seek(0)
-    # buffer0 = b''.join(img)
-    plot_buffer4 = base64.b64encode(img.getvalue())
-    q4plt = plot_buffer4.decode('utf-8')
-    return render_template('query4.html', q4plt=q4plt)
+    if request.method == 'GET':
+        players = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE(x.player_code), p.first_name, p.last_name, x.no_of_play_year From (
+                        SELECT player_code, count(year) no_of_play_year from (
+                        SELECT * from (
+                        SELECT player_code, year, SUM(yard) yard_in_year, SUM(touchdown) touchdown_in_year FROM (
+                        SELECT pgs.player_code, pgs.game_code, pgs.year, pgs.rush_yard+pgs.pass_yard as yard, pgs.rush_touchdown+pgs.pass_touchdown as touchdown
+                        from ACOLAS.player_game_statistics pgs)
+                        GROUP BY player_code, year order by player_code, year asc)
+                        where yard_in_year>0 AND touchdown_in_year>0 order by player_code)
+                        group by player_code) x, acolas.player p
+                        where x.player_code=p.player_code order by no_of_play_year desc''')
+        for player in cur.fetchall():
+            player = str(player[1]) + ' ' + str(player[2])
+            print(player)
+            players.append(player)
+        return render_template('query4.html', players=json.dumps(players))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("players"))
+        key = int(name.find(" "))
+        firstname = name[0:key]
+        lastname = name[(key + 1):len(name)]
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE(x.year), x.yard_in_year, x.touchdown_in_year FROM (
+                    SELECT player_code, year, SUM(yard) yard_in_year, SUM(touchdown) touchdown_in_year FROM (
+                    SELECT pgs.player_code, pgs.game_code, pgs.year, pgs.rush_yard+pgs.pass_yard as yard, pgs.rush_touchdown+pgs.pass_touchdown as touchdown
+                    from ACOLAS.player_game_statistics pgs)
+                    GROUP BY player_code, year order by player_code, year asc) x,
+                    acolas.player p
+                    WHERE x.player_code=p.player_code AND p.first_name='%s' AND p.last_name='%s' order by year''' %(firstname, lastname))
+        for row in cur.fetchall():
+            results.append(row)
+        year = [result[0] for result in results]
+        yard_in_year = [result[1]/100 for result in results]
+        touch_down_in_year = [result[2] for result in results]
+        # y_pos = np.arange(len(names))
+        plt.plot(year, yard_in_year, 's-', color='r', label="100 Yards")
+        plt.plot(year, touch_down_in_year, 'o-', color='g', label="Touchdown #")
+        plt.xlabel('years')
+        plt.title('Player Statistics Through the Time')
+        plt.legend(loc="best")
+        plt.xticks(np.arange(min(year), max(year) + 1, 1.0))
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+        plot_buffer4 = base64.b64encode(img.getvalue())
+        q4plt = plot_buffer4.decode('utf-8')
+
+        players = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE(x.player_code), p.first_name, p.last_name, x.no_of_play_year From (
+                                SELECT player_code, count(year) no_of_play_year from (
+                                SELECT * from (
+                                SELECT player_code, year, SUM(yard) yard_in_year, SUM(touchdown) touchdown_in_year FROM (
+                                SELECT pgs.player_code, pgs.game_code, pgs.year, pgs.rush_yard+pgs.pass_yard as yard, pgs.rush_touchdown+pgs.pass_touchdown as touchdown
+                                from ACOLAS.player_game_statistics pgs)
+                                GROUP BY player_code, year order by player_code, year asc)
+                                where yard_in_year>0 AND touchdown_in_year>0 order by player_code)
+                                group by player_code) x, acolas.player p
+                                where x.player_code=p.player_code order by no_of_play_year desc''')
+        for player in cur.fetchall():
+            player = str(player[1]) + ' ' + str(player[2])
+            print(player)
+            players.append(player)
+        return render_template('query4.html', q4plt=q4plt, players=json.dumps(players))
 
 
 @app.route('/query6', methods=['GET','POST'])
@@ -436,9 +478,15 @@ def query6():
         year = [result[0] for result in results]
         time_of_possession = [result[1] for result in results]
         points = [result[2] * 80 for result in results]
+
+        correlation_coefficient = np.corrcoef(time_of_possession, points, rowvar=True)
+        print("correlation_coefficient: ", correlation_coefficient[0][1])
+
         # y_pos = np.arange(len(names))
         plt.plot(year, time_of_possession, 's-', color='r', label="Avg Time of Possession")
         plt.plot(year, points, 'o-', color='g', label="Avg Points*80")
+        plt.text(2008, 2200, "correlation_coefficient:\n" + str(correlation_coefficient[0][1])[:5],
+                 fontsize=12, horizontalalignment='center', verticalalignment='center')
         plt.ylabel('Seconds')
         plt.xlabel('Years')
         plt.title('Time of Possession and Win Percentage through the Years')
@@ -531,73 +579,91 @@ def query8():
         return render_template('query8.html', q8plt=q8plt, teams=json.dumps(teams))
 
 
-@app.route('/query9', methods=['GET','POST'])
+@app.route('/query9', methods=['GET', 'POST'])
 def query9():
-    img = BytesIO()
-    name = str(request.form.get("teamname"))
-    results = []
-    cur = connection.cursor()
-    cur.execute('''SELECT UNIQUE(t.name), taa.year, taa.avgheight, taa.avgweight 
-                FROM acolas.team t,
-                (SELECT team_code, year, AVG(height) avgheight, AVG(weight) avgweight 
-                FROM acolas.player WHERE height IS NOT NULL AND weight IS NOT NULL GROUP BY team_code, year) taa
-                WHERE t.team_code=taa.team_code AND t.name='%s' ORDER BY year''' %name)
-    for row in cur.fetchall():
-        results.append(row)
+    if request.method == 'GET':
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query9.html', teams=json.dumps(teams))
+    elif request.method == 'POST':
+        img = BytesIO()
+        name = str(request.form.get("teams"))
+        results = []
+        cur = connection.cursor()
+        cur.execute('''SELECT t1.year, t1.team_avg_height, t2.conference_avg_height FROM (
+                        SELECT unique(taa.year), taa.avgheight team_avg_height
+                        FROM acolas.team t,
+                        (SELECT team_code, year, AVG(height) avgheight
+                        FROM acolas.player WHERE height IS NOT NULL GROUP BY team_code, year) taa
+                        WHERE t.team_code=taa.team_code AND t.name='%s' ORDER BY year) t1
+                        JOIN (
+                        SELECT year, AVG(height) conference_avg_height
+                        FROM acolas.player
+                        WHERE team_code IN (SELECT team_code FROM acolas.team WHERE conference_code=
+                        (SELECT unique(conference_code) FROM acolas.team WHERE name='%s')) AND height IS NOT NULL GROUP BY year) t2
+                        ON t1.year=t2.year''' % (name, name))
+        for row in cur.fetchall():
+            results.append(row)
+        year = [result[0] for result in results]
+        team_avgheight = [result[1] for result in results]
+        con_avgheight = [result[2] for result in results]
+        # y_pos = np.arange(len(names))
+        plt.plot(year, team_avgheight, 's-', color='r', label="Team Avg Height")
+        plt.plot(year, con_avgheight, 'o-', color='g', label="Conference Avg Height")
+        plt.ylabel('Height')
+        # plt.title('Query Nine')
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+        plot_buffer91 = base64.b64encode(img.getvalue())
+        q91plt = plot_buffer91.decode('utf-8')
+        img = BytesIO()
+        # name1 = str(request.form.get("teamname1"))
+        results1 = []
+        cur = connection.cursor()
+        cur.execute('''SELECT t1.year, t1.team_avg_weight, t2.conference_avg_weight FROM (
+                        SELECT unique(taa.year), taa.avgweight team_avg_weight
+                        FROM acolas.team t,
+                        (SELECT team_code, year, AVG(weight) avgweight
+                        FROM acolas.player WHERE weight IS NOT NULL GROUP BY team_code, year) taa
+                        WHERE t.team_code=taa.team_code AND t.name='%s' ORDER BY year) t1
+                        JOIN (
+                        SELECT year, AVG(weight) conference_avg_weight
+                        FROM acolas.player
+                        WHERE team_code IN (SELECT team_code FROM acolas.team WHERE conference_code=
+                        (SELECT unique(conference_code) FROM acolas.team WHERE name='%s')) AND weight IS NOT NULL GROUP BY year) t2
+                        ON t1.year=t2.year''' % (name, name))
+        for row in cur.fetchall():
+            results1.append(row)
+        year1 = [result1[0] for result1 in results1]
+        team_avgweight = [result1[1] for result1 in results1]
+        con_avgweight = [result1[2] for result1 in results1]
+        # y_pos = np.arange(len(names))
+        plt.plot(year1, team_avgweight, 's-', color='r', label="Team Avg Weight")
+        plt.plot(year1, con_avgweight, 'o-', color='g', label="Conference Avg Weight")
+        plt.ylabel('Weight')
+        # plt.title('Query Nine B')
+        plt.legend(loc="best")
+        plt.tight_layout()
+        plt.savefig(img, format='png')
+        plt.close()
+        img.seek(0)
+        # buffer0 = b''.join(img)
+        plot_buffer92 = base64.b64encode(img.getvalue())
+        q92plt = plot_buffer92.decode('utf-8')
 
-    year = [result[1] for result in results]
-    avgheight = [result[2] for result in results]
-    avgweight = [result[3] for result in results]
-
-    # y_pos = np.arange(len(names))
-
-    plt.plot(year, avgheight, 's-', color = 'r', label = "Avg Height")
-    plt.plot(year, avgweight, 'o-', color = 'g', label = "Avg Weight")
-    plt.ylabel('Number')
-    plt.title('Query Nine')
-    plt.legend(loc = "best")
-    plt.tight_layout()
-    plt.savefig(img,format='png')
-    plt.close()
-    img.seek(0)
-    # buffer0 = b''.join(img)
-
-    plot_buffer91 = base64.b64encode(img.getvalue())
-    q91plt = plot_buffer91.decode('utf-8')
-
-    img = BytesIO()
-    conference_name = str(request.form.get("conname"))
-    results = []
-    cur = connection.cursor()
-    cur.execute('''SELECT ct.year, AVG(avgheight) avghc, AVG(avgweight) avgwc FROM (
-                    SELECT unique(taa.team_code), c.name conference, taa.year, taa.avgheight, taa.avgweight FROM acolas.team t, acolas.conference c, (
-                    SELECT team_code, year, AVG(height) avgheight, AVG(weight) avgweight FROM acolas.player
-                    WHERE height IS NOT NULL AND weight IS NOT NULL
-                    GROUP BY team_code, year) taa WHERE taa.team_code=t.team_code AND t.conference_code=c.conference_code  AND c.name='%s') ct
-                    GROUP BY year ORDER BY year''' % conference_name)
-    for row in cur.fetchall():
-        results.append(row)
-
-    year = [result[0] for result in results]
-    avgheight = [result[1] for result in results]
-    avgweight = [result[2] for result in results]
-
-    # y_pos = np.arange(len(names))
-
-    plt.plot(year, avgheight, 's-', color='r', label="Avg Height")
-    plt.plot(year, avgweight, 'o-', color='g', label="Avg Weight")
-    plt.ylabel('Number')
-    plt.title('Query Nine B')
-    plt.legend(loc="best")
-    plt.tight_layout()
-    plt.savefig(img, format='png')
-    plt.close()
-    img.seek(0)
-    # buffer0 = b''.join(img)
-
-    plot_buffer92 = base64.b64encode(img.getvalue())
-    q92plt = plot_buffer92.decode('utf-8')
-    return render_template('query9.html', q91plt=q91plt, q92plt=q92plt)
+        teams = []
+        cur = connection.cursor()
+        cur.execute('''SELECT UNIQUE name FROM acolas.team''')
+        for team in cur.fetchall():
+            teams.append(str(team[0]))
+        return render_template('query9.html', q91plt=q91plt, q92plt=q92plt, teams=json.dumps(teams))
 
 
 @app.route('/choose_trends', methods=['POST', 'GET'])

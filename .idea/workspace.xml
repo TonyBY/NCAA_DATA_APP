@@ -2,15 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8b288782-5cc1-469b-b3e3-df3787b4bc3a" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/templates/query4.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/interesting_trends_list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/interesting_trends_list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/query1.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query1.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/query2.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query2.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/query3.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query3.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/query6.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query6.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/query8.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query8.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/query4.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query4.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/query9.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/query9.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -24,8 +18,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-616">
-              <caret line="608" column="30" lean-forward="true" selection-start-line="608" selection-start-column="30" selection-end-line="609" selection-end-column="40" />
+            <state relative-caret-position="307">
+              <caret line="488" column="87" selection-start-line="488" selection-start-column="87" selection-end-line="488" selection-end-column="87" />
               <folding>
                 <element signature="e#0#68#0" expanded="true" />
               </folding>
@@ -36,8 +30,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/interesting_trends_list.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
-              <caret line="23" column="120" selection-start-line="23" selection-start-column="43" selection-end-line="23" selection-end-column="120" />
+            <state relative-caret-position="313">
+              <caret line="26" column="124" selection-start-line="26" selection-start-column="43" selection-end-line="26" selection-end-column="124" />
             </state>
           </provider>
         </entry>
@@ -54,7 +48,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/query2.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="568">
+            <state relative-caret-position="524">
               <caret line="198" column="10" selection-start-line="198" selection-start-column="10" selection-end-line="198" selection-end-column="10" />
             </state>
           </provider>
@@ -63,8 +57,12 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/query3.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="148">
-              <caret line="170" column="48" lean-forward="true" selection-end-line="200" />
+            <state relative-caret-position="135">
+              <caret line="177" column="17" selection-end-line="200" />
+              <folding>
+                <element signature="n#style#0;n#!!top" />
+                <element signature="n#src#0;n#img#0;n#div#0;n#!!top" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -72,12 +70,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/query4.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="213">
-              <caret line="78" column="86" selection-start-line="78" selection-start-column="86" selection-end-line="78" selection-end-column="86" />
+            <state relative-caret-position="146">
+              <caret line="177" column="38" selection-start-line="177" selection-start-column="22" selection-end-line="177" selection-end-column="38" />
               <folding>
                 <element signature="n#style#0;n#!!top" />
                 <element signature="n#src#0;n#img#0;n#div#0;n#!!top" expanded="true" />
-                <element signature="n#style#0;n#button#0;n#div#1;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -95,8 +92,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/query8.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="198" column="10" selection-start-line="198" selection-start-column="10" selection-end-line="198" selection-end-column="10" />
+            <state>
+              <caret selection-end-line="199" selection-end-column="14" />
               <folding>
                 <element signature="e#124#1404#0#HTML" />
                 <element signature="e#1610#1844#0#HTML" />
@@ -109,8 +106,13 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/templates/query9.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="900">
-              <caret line="60" column="8" lean-forward="true" selection-start-line="60" selection-start-column="8" selection-end-line="60" selection-end-column="8" />
+            <state relative-caret-position="163">
+              <caret line="185" column="48" selection-start-line="185" selection-start-column="8" selection-end-line="185" selection-end-column="48" />
+              <folding>
+                <element signature="e#124#1404#0#HTML" />
+                <element signature="e#874#914#0#HTML" expanded="true" />
+                <element signature="e#1068#1108#0#HTML" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -148,7 +150,6 @@
       <find>/graph</find>
       <find>Country</find>
       <find>cur.</find>
-      <find>teams</find>
       <find>inp</find>
       <find>dump</find>
       <find>load</find>
@@ -160,6 +161,11 @@
       <find>email</find>
       <find>query</find>
       <find>plt</find>
+      <find>teams</find>
+      <find>team</find>
+      <find>3</find>
+      <find>query8</find>
+      <find>tra</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -185,11 +191,11 @@
         <option value="$PROJECT_DIR$/templates/query3.html" />
         <option value="$PROJECT_DIR$/templates/query6.html" />
         <option value="$PROJECT_DIR$/templates/query8.html" />
-        <option value="$PROJECT_DIR$/templates/query9.html" />
         <option value="$PROJECT_DIR$/templates/query1.html" />
-        <option value="$PROJECT_DIR$/app.py" />
         <option value="$PROJECT_DIR$/templates/interesting_trends_list.html" />
         <option value="$PROJECT_DIR$/templates/query4.html" />
+        <option value="$PROJECT_DIR$/templates/query9.html" />
+        <option value="$PROJECT_DIR$/app.py" />
       </list>
     </option>
   </component>
@@ -281,15 +287,16 @@
       <workItem from="1572534743951" duration="11653000" />
       <workItem from="1572555310567" duration="5983000" />
       <workItem from="1574004596114" duration="25924000" />
-      <workItem from="1575321765535" duration="1999000" />
+      <workItem from="1575321765535" duration="10033000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="45559000" />
+    <option name="totallyTimeSpent" value="53593000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1440" height="900" extended-state="0" />
+    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.19241774" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -305,7 +312,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.22289157" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32048193" />
       <window_info anchor="bottom" id="Python Console" order="12" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -437,36 +444,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/query2.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="568">
-          <caret line="198" column="10" selection-start-line="198" selection-start-column="10" selection-end-line="198" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/templates/query6.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="568">
           <caret line="198" column="10" selection-start-line="198" selection-start-column="10" selection-end-line="198" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/query9.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="900">
-          <caret line="60" column="8" lean-forward="true" selection-start-line="60" selection-start-column="8" selection-end-line="60" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/query8.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="198" column="10" selection-start-line="198" selection-start-column="10" selection-end-line="198" selection-end-column="10" />
-          <folding>
-            <element signature="e#124#1404#0#HTML" />
-            <element signature="e#1610#1844#0#HTML" />
-            <element signature="e#1850#7031#0#HTML" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -477,36 +458,70 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/query3.html">
+    <entry file="file://$PROJECT_DIR$/templates/query2.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="148">
-          <caret line="170" column="48" lean-forward="true" selection-end-line="200" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/interesting_trends_list.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
-          <caret line="23" column="120" selection-start-line="23" selection-start-column="43" selection-end-line="23" selection-end-column="120" />
+        <state relative-caret-position="524">
+          <caret line="198" column="10" selection-start-line="198" selection-start-column="10" selection-end-line="198" selection-end-column="10" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/query4.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="213">
-          <caret line="78" column="86" selection-start-line="78" selection-start-column="86" selection-end-line="78" selection-end-column="86" />
+        <state relative-caret-position="146">
+          <caret line="177" column="38" selection-start-line="177" selection-start-column="22" selection-end-line="177" selection-end-column="38" />
           <folding>
             <element signature="n#style#0;n#!!top" />
             <element signature="n#src#0;n#img#0;n#div#0;n#!!top" expanded="true" />
-            <element signature="n#style#0;n#button#0;n#div#1;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/query8.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="199" selection-end-column="14" />
+          <folding>
+            <element signature="e#124#1404#0#HTML" />
+            <element signature="e#1610#1844#0#HTML" />
+            <element signature="e#1850#7031#0#HTML" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/query3.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="177" column="17" selection-end-line="200" />
+          <folding>
+            <element signature="n#style#0;n#!!top" />
+            <element signature="n#src#0;n#img#0;n#div#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/interesting_trends_list.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="313">
+          <caret line="26" column="124" selection-start-line="26" selection-start-column="43" selection-end-line="26" selection-end-column="124" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/query9.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="163">
+          <caret line="185" column="48" selection-start-line="185" selection-start-column="8" selection-end-line="185" selection-end-column="48" />
+          <folding>
+            <element signature="e#124#1404#0#HTML" />
+            <element signature="e#874#914#0#HTML" expanded="true" />
+            <element signature="e#1068#1108#0#HTML" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-616">
-          <caret line="608" column="30" lean-forward="true" selection-start-line="608" selection-start-column="30" selection-end-line="609" selection-end-column="40" />
+        <state relative-caret-position="307">
+          <caret line="488" column="87" selection-start-line="488" selection-start-column="87" selection-end-line="488" selection-end-column="87" />
           <folding>
             <element signature="e#0#68#0" expanded="true" />
           </folding>
