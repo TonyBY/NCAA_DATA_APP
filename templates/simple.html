@@ -6,60 +6,78 @@
 <link type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
 {% endblock %}
 {% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class=flashes>
+{% if messages %}
+<ul class=flashes>
     {% for message in messages %}
-      <li>{{ message }}</li>
+    <li>{{ message }}</li>
     {% endfor %}
-    </ul>
-  {% endif %}
+</ul>
+{% endif %}
 {% endwith %}
 {% block body %}
 <div class="limiter">
     <h1 style="text-align: center">Quick QA</h1>
     <div class="container-trends100">
         <div class="wrap-trends100">
-            <form id="trend_form" action="/simple1" method="POST" enctype="multipart/form-data">
+            <form id="trend_form" action="/simple2a" method="POST" enctype="multipart/form-data">
                 <div class="block">
-                    <label>What is the best quarterback in<input type="text" name='text' class="simple" placeholder="conference" />?</label><input type="submit" value="Go">
+                    <label>Which high schools provide the most players in<input type="text" name='text' class="simple"
+                            placeholder="year" />?</label><input type="submit" value="Go">
                 </div>
             </form>
-            <form id="trend_form" action="/simple2" method="POST" enctype="multipart/form-data">
-            <div class="block">
-                <label>Which high schools provide the most players in<input type="text" name='text' class="simple" placeholder="year" />?</label><input type="submit" value="Go">
-            </div>
-        </form>
-        
-        <form id="trend_form" action="/simple4" method="POST" enctype="multipart/form-data">
-            <div class="block">
-                <label>What is the best team in year<input type="text" name= 'text' class="simple" placeholder="year" />?</label><input type="submit" value="Go">
-            </div>
+            <form id="trend_form" action="/simple2b" method="POST" enctype="multipart/form-data">
+                <div class="block">
+                    <label>Which high schools provide the least players in<input type="text" name='text' class="simple"
+                            placeholder="year" />?</label><input type="submit" value="Go">
+                </div>
             </form>
-           
-            <form id="trend_form" action="/simple6" method="POST" enctype="multipart/form-data">
-            <div class="block">
-                <label>What is the most popular team in terms of attendance ?</label><input type="submit" value="Go">
-            </div>
+            <form id="trend_form" action="/simple4a" method="POST" enctype="multipart/form-data">
+                <div class="block">
+                    <label>What is the best team in year<input type="text" name='text' class="simple"
+                            placeholder="year" />?</label><input type="submit" value="Go">
+                </div>
             </form>
-            <form id="trend_form" action="/simple7" method="POST" enctype="multipart/form-data">
-            <div class="block">
-                <label>What is the most popular play type throughout year<input type="text" class="simple"placeholder="year" />?</label><input type="submit" value="Go">
-            </div>
+            
+            <form id="trend_form" action="/simple4b" method="POST" enctype="multipart/form-data">
+                <div class="block">
+                    <label>What is the worst team in year<input type="text" name='text' class="simple"
+                            placeholder="year" />?</label><input type="submit" value="Go">
+                </div>
             </form>
+
+            <form id="trend_form" action="/simple6a" method="POST" enctype="multipart/form-data">
+                <div class="block">
+                    <label>What is the most popular team in terms of attendance ?</label><input type="submit"
+                        value="Go">
+                </div>
+            </form>
+            <!-- <form id="trend_form" action="/simple6b" method="POST" enctype="multipart/form-data">
+                <div class="block">
+                    <label>What is the least popular team in terms of attendance ?</label><input type="submit"
+                        value="Go">
+                </div>
+            </form> -->
+            <!-- <form id="trend_form" action="/simple7" method="POST" enctype="multipart/form-data">
+                <div class="block">
+                    <label>What is the most popular play type throughout year<input type="text" class="simple"
+                            placeholder="year" />?</label><input type="submit" value="Go">
+                </div>
+            </form> -->
             <form id="trend_form" action="/simple8a" method="POST" enctype="multipart/form-data">
-            <div class="block">
-                <label>Who played in the highest scoring game?</label><input type="submit" value="Go">
-            </div>
+                <div class="block">
+                    <label>Who played in the highest scoring game?</label><input type="submit" value="Go">
+                </div>
             </form>
             <form id="trend_form" action="/simple8b" method="POST" enctype="multipart/form-data">
                 <div class="block">
                     <label>Who played in the lowest scoring game?</label><input type="submit" value="Go">
                 </div>
-                </form>
+            </form>
             <form id="trend_form" action="/simple9" method="POST" enctype="multipart/form-data">
-            <div class="block">
-                <label>How many players are below 6’0”, group them by their positions.</label><input type="submit" value="Go">
-            </div>
+                <div class="block">
+                    <label>How many players are below 6’0”, group them by their positions.</label><input type="submit"
+                        value="Go">
+                </div>
             </form>
             <div class="text-center p-t-115">
                 <a class="txt2" href="/home">

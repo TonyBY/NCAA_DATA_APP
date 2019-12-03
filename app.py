@@ -63,14 +63,40 @@ def index():
         print("password:", password)
         # date_created = time.strftime('%Y/%m/%d %H:%M:%S')
         try:
+            results = []
             # cur.execute("SELECT password FROM NCAA_Pro_Users WHERE username='%s'" % username)
             cur.execute(
                 "SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
             print("SELECT password FROM NCAA_PRO_USERS WHERE username='%s'" % username)
             real_password = cur.fetchone()[0]
             print("real password:", real_password)
+
+            cur.execute('''SELECT SUM(no_of_tuples) FROM (
+                        SELECT * FROM 
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.team_game_statistics)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.player_game_statistics)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.game)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.play)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.conference)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.team)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.player)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.play)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.kickoff)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.stadium))''')
+            for row in cur.fetchall():
+                results.append(row)
+            tuples = format(results[0][0], ",")
             if password == real_password:
-                return render_template('home.html', user=username.split('@')[0])
+                return render_template('home.html', user=username.split('@')[0],tuples=tuples)
             else:
                 return "Wrong Password Please Try Again"
         except Exception as e:
@@ -708,8 +734,8 @@ def simple1():
     print("FINNA " + str(text))
 
 
-@app.route('/simple2', methods=['POST', 'GET'])
-def simple2():
+@app.route('/simple2a', methods=['POST', 'GET'])
+def simple2a():
     results = []
     year = str(request.form['text'])
     cur = connection.cursor()
@@ -724,8 +750,24 @@ def simple2():
     flash("School: " + str(results[0][1]) + '<br/>' + "Players: " + str(results[0][2]))
     return render_template('simple.html')
 
-@app.route('/simple4', methods=['POST', 'GET'])
-def simple4():
+@app.route('/simple2b', methods=['POST', 'GET'])
+def simple2b():
+    results = []
+    year = str(request.form['text'])
+    cur = connection.cursor()
+    cur.execute('''(SELECT * FROM 
+                (SELECT year, last_school, COUNT(*) no_of_players FROM acolas.player 
+                WHERE last_school IS NOT NULL AND year=%s
+                GROUP BY year, last_school 
+                ORDER BY no_of_players ASC) 
+                WHERE rownum<=1)'''%year)
+    for row in cur.fetchall():
+        results.append(row)
+    flash("School: " + str(results[0][1]) + '<br/>' + "Players: " + str(results[0][2]))
+    return render_template('simple.html')
+
+@app.route('/simple4a', methods=['POST', 'GET'])
+def simple4a():
     results = []
     year = str(request.form['text'])
     cur = connection.cursor()
@@ -748,8 +790,32 @@ def simple4():
     flash("Best Team: " + str(results[0][0]))
     return render_template('simple.html')
 
-@app.route('/simple6', methods=['POST', 'GET'])
-def simple6():
+@app.route('/simple4b', methods=['POST', 'GET'])
+def simple4b():
+    results = []
+    year = str(request.form['text'])
+    cur = connection.cursor()
+    cur.execute('''SELECT name 
+                FROM(SELECT unique(t3.year), t.name, t3.min_total_points FROM acolas.team t, (
+                SELECT t1.year, t1.team_code, t2.min_total_points FROM (
+                SELECT year, team_code, SUM(points) total_points 
+                FROM ACOLAS.team_game_statistics GROUP BY year, team_code) t1
+                JOIN (
+                SELECT year, min(total_points) min_total_points FROM (
+                SELECT year, team_code, SUM(points) total_points
+                FROM ACOLAS.team_game_statistics 
+                GROUP BY year, team_code) GROUP BY year) t2 ON t1.total_points=t2.min_total_points) t3
+                WHERE t.team_code=t3.team_code ORDER BY year)
+                WHERE year =%s
+            '''%year)
+    for row in cur.fetchall():
+        results.append(row)
+    print(results)
+    flash("Worst Team: " + str(results[0][0]))
+    return render_template('simple.html')
+
+@app.route('/simple6a', methods=['POST', 'GET'])
+def simple6a():
     results = []
     cur = connection.cursor()
     cur.execute('''SELECT ta.total_attendance, t.name FROM acolas.team t, 
@@ -764,6 +830,23 @@ def simple6():
     attendance = format(results[0][0], ",")
     flash("Team: " + str(results[0][1]) + "<br/>" + "Total Attendance: " + str(attendance))
     return render_template('simple.html')
+
+# @app.route('/simple6b', methods=['POST', 'GET'])
+# def simple6b():
+#     results = []
+#     cur = connection.cursor()
+#     cur.execute('''SELECT ta.total_attendance, t.name FROM acolas.team t, 
+#     (SELECT team, SUM(attendance) total_attendance FROM (
+#     SELECT visit_team team, attendance FROM acolas.game UNION
+#     SELECT home_team team, attendance FROM acolas.game)
+#     GROUP BY TEAM ORDER BY sum(attendance) asc) ta
+#     WHERE rownum<3''')
+#     for row in cur.fetchall():
+#         results.append(row)
+#     print(results)
+#     # attendance = format(results[0][0], ",")
+#     # flash("Team: " + str(results[0][1]) + "<br/>" + "Total Attendance: " + str(attendance))
+#     return render_template('simple.html')
 
 @app.route('/simple8a', methods=['POST', 'GET'])
 def simple8a():
@@ -993,9 +1076,10 @@ def head_to_head():
         df = df.pivot(index='Conference A', columns='Conference B', values='Win %')
         print(df)
         fig, ax = plt.subplots()
-        ax = sn.heatmap(df, cmap = "Blues", annot=True,annot_kws={"size": 10},fmt='g')
+        ax = sn.heatmap(df, cmap = "Blues", annot=True,annot_kws={"size": 10},fmt='g',cbar_kws={'label': 'Win Percentage'})
         ax.set_xticklabels(ax.get_xmajorticklabels(), fontsize = 8)
         ax.set_yticklabels(ax.get_ymajorticklabels(), fontsize = 8)
+        ax.set_title('Conference vs. Conference Win Percentage in ' + str(year))
         ax.figure.tight_layout()
         # fig.savefig("output.png")
         fig.savefig(img, format='png')
