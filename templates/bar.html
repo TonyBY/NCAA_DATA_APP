@@ -8,6 +8,6 @@
 {% block body %}
 <div class="container">
     <h2>Image</h2>
-    <img src="data:image/png;base64,{{ barplt }}">    
+    <img src="data:image/png;base64,{{ barplt }}" onerror="this.style.display='none';">    
 </div>
 {% endblock %}

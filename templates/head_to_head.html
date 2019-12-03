@@ -77,7 +77,7 @@
         <div class="wrap-trends100">
             <form autocomplete="off" action="/head_to_head" method="POST">
                 <div class="autocomplete" style="width:300px;">
-                    <input id="years" type="text" name="years" placeholder="Team">
+                    <input id="years" type="text" name="years" placeholder="Year">
                 </div>
                 <input type="submit">
             </form>
@@ -187,7 +187,7 @@
                 autocomplete(document.getElementById("years"), years);
             </script>
             <div class="container">
-                <img src="data:image/png;base64,{{ h2hplt }}">
+                <img src="data:image/png;base64,{{ h2hplt }}" onerror="this.style.display='none';">
             </div>
             <div class="text-center p-t-115">
                 <a class="txt2" href="/home">
