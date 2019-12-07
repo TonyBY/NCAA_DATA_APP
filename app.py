@@ -15,6 +15,7 @@ from flask_toastr import Toastr
 
 
 
+
 # initialize flask application
 app = Flask(__name__)
 toastr = Toastr()
@@ -154,7 +155,33 @@ def sign_up():
 # Back to home page
 @app.route('/home')
 def back_home():
-    return render_template('home.html')
+    cur = connection.cursor()
+    results = []
+    cur.execute('''SELECT SUM(no_of_tuples) FROM (
+                        SELECT * FROM 
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.team_game_statistics)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.player_game_statistics)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.game)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.play)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.conference)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.team)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.player)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.play)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.kickoff)
+                        UNION
+                        (SELECT COUNT(*) no_of_tuples FROM ACOLAS.stadium))''')
+    for row in cur.fetchall():
+        results.append(row)
+    tuples = format(results[0][0], ",")
+    return render_template('home.html',tuples=tuples)
 
 
 # Sample Query Visualization
